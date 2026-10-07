@@ -22,6 +22,12 @@ jobs:
         run: |
           curl --fail --retry 30 --retry-connrefused --retry-delay 2 --max-time 5 http://localhost:8223/alive
           curl --fail --max-time 5 http://localhost:8223/api/config | python3 -c 'import json,sys; c=json.load(sys.stdin); assert c["object"] == "config"'
+      - name: Diagnose startup failure
+        if: failure()
+        run: |
+          docker compose -f sit/compose.yaml ps -a
+          docker compose -f sit/compose.yaml logs --tail 80
+          docker compose -f sit/compose.yaml port vaultwarden 80
       - name: Remove ephemeral test vault
         if: always()
         run: docker compose -f sit/compose.yaml down --volumes
