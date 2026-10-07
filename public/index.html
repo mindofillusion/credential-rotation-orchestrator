@@ -17,15 +17,15 @@
   </header>
 
   <nav aria-label="Navigation principale">
-    <button class="nav-item active" type="button">Vue d’ensemble</button>
+    <button class="nav-item active" type="button" data-view="overview">Vue d’ensemble</button>
+    <button class="nav-item" type="button" data-view="workshop">Atelier de templates</button>
     <button class="nav-item" type="button" disabled>Sites</button>
     <button class="nav-item" type="button" disabled>Identifiants</button>
-    <button class="nav-item" type="button" disabled>Templates</button>
     <button class="nav-item" type="button" disabled>Intégrations</button>
   </nav>
 
   <main>
-    <section class="notice" aria-labelledby="notice-title">
+    <section class="notice" aria-labelledby="notice-title" data-page="overview">
       <div>
         <strong id="notice-title">Environnement de simulation</strong>
         <p>Aucun coffre ni site réel n’est contacté. Ce MVP valide la signature, les transitions et les alertes.</p>
@@ -33,14 +33,14 @@
       <span class="status safe">Sans secrets réels</span>
     </section>
 
-    <section class="summary" aria-label="État du système">
+    <section class="summary" aria-label="État du système" data-page="overview">
       <article><span>Coffre</span><strong id="vault-state">—</strong></article>
       <article><span>Templates fiables</span><strong id="template-count">—</strong></article>
       <article><span>Identifiants suivis</span><strong id="account-count">—</strong></article>
       <article><span>État ambigu</span><strong id="ambiguous-count">—</strong></article>
     </section>
 
-    <div class="columns">
+    <div class="columns" data-page="overview">
       <section class="panel" aria-labelledby="simulation-title">
         <div class="panel-heading">
           <div>
@@ -70,7 +70,7 @@
       </section>
     </div>
 
-    <section class="panel" aria-labelledby="events-title">
+    <section class="panel" aria-labelledby="events-title" data-page="overview">
       <div class="panel-heading">
         <div>
           <p class="eyebrow">CloudEvents local</p>
@@ -79,6 +79,76 @@
         <span class="live">Temps réel</span>
       </div>
       <div id="events" class="events" aria-live="polite"></div>
+    </section>
+
+    <section class="workshop" data-page="workshop" hidden>
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Chaîne de confiance locale</p>
+          <h2>Atelier de templates</h2>
+          <p>Créez, signez, exportez et importez des parcours déclaratifs sans code exécutable.</p>
+        </div>
+        <span class="status safe">Clé privée locale</span>
+      </div>
+
+      <section class="identity-card" aria-labelledby="identity-title">
+        <div>
+          <span>Identité de signature</span>
+          <strong id="identity-title">Chargement…</strong>
+        </div>
+        <code id="identity-fingerprint">—</code>
+      </section>
+
+      <div class="workshop-grid">
+        <form class="panel form-stack" id="create-template">
+          <div class="panel-heading"><div><p class="eyebrow">Éditeur statique</p><h2>Nouveau template</h2></div></div>
+          <label for="template-id">Identifiant</label>
+          <input id="template-id" value="org.example.custom-password" required pattern="[a-z0-9]+([.-][a-z0-9]+)+">
+          <div class="form-row">
+            <div><label for="template-version">Version</label><input id="template-version" value="0.1.0" required></div>
+            <div><label for="template-origin">Origine HTTPS</label><input id="template-origin" value="https://example.com" required type="url"></div>
+          </div>
+          <label for="template-steps">Étapes JSON</label>
+          <textarea id="template-steps" rows="12" spellcheck="false">[
+  {"action":"navigate","url":"https://example.com/.well-known/change-password"},
+  {"action":"fill-current-password","selector":"#current-password"},
+  {"action":"fill-new-password","selector":"#new-password"},
+  {"action":"fill-confirm-password","selector":"#confirm-password"},
+  {"action":"click","selector":"button[type=submit]"},
+  {"action":"assert-text","value":"Password updated"}
+]</textarea>
+          <button class="primary" type="submit">Valider et signer localement</button>
+          <output id="create-result" aria-live="polite">La validation statique précède toujours la signature.</output>
+        </form>
+
+        <div class="stack">
+          <form class="panel form-stack" id="import-template">
+            <div class="panel-heading"><div><p class="eyebrow">Import manuel</p><h2>Vérifier un bundle</h2></div></div>
+            <label for="bundle-sha">SHA-256 attendu</label>
+            <input id="bundle-sha" placeholder="64 caractères hexadécimaux" required>
+            <label for="bundle-json">Bundle JSON</label>
+            <textarea id="bundle-json" rows="8" spellcheck="false" placeholder='{"manifest":{},"recipe":{},"signature":{}}' required></textarea>
+            <button class="secondary" type="submit">Vérifier et importer</button>
+            <output id="import-result" aria-live="polite">Le signataire doit déjà être approuvé.</output>
+          </form>
+
+          <details class="panel trust-panel">
+            <summary>Approuver une clé publique</summary>
+            <form class="form-stack" id="trust-key">
+              <label for="trust-key-id">Identifiant de clé</label><input id="trust-key-id" required>
+              <label for="trust-fingerprint">Empreinte SHA-256 vérifiée hors bande</label><input id="trust-fingerprint" required>
+              <label for="trust-pem">Clé publique PEM</label><textarea id="trust-pem" rows="5" required spellcheck="false"></textarea>
+              <button class="secondary" type="submit">Approuver cette clé</button>
+              <output id="trust-result" aria-live="polite">Comparez l’empreinte via un canal indépendant.</output>
+            </form>
+          </details>
+        </div>
+      </div>
+
+      <section class="panel" aria-labelledby="workshop-templates-title">
+        <div class="panel-heading"><div><p class="eyebrow">Stockage persistant</p><h2 id="workshop-templates-title">Templates disponibles</h2></div></div>
+        <div id="workshop-templates" class="list"></div>
+      </section>
     </section>
   </main>
   <script src="/app.js" type="module"></script>

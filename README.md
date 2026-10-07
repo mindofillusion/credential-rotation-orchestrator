@@ -3,11 +3,11 @@
 Credential Rotation Orchestrator (CRO) is a local-first, vault-agnostic project for safely remediating compromised, weak, or reused credentials. It is designed to coordinate password changes on websites without sending credentials, browser sessions, or private history to a central service.
 
 > [!WARNING]
-> This repository is an early security prototype. Version `0.1.0` uses a simulated vault and simulated website runner. It must not be used with real credentials yet.
+> This repository is an early security prototype. Version `0.2.0` uses a simulated vault and simulated website runner. It must not be used with real credentials yet.
 
 ## Current prototype
 
-The first milestone validates the parts that must fail safely:
+The current milestone validates the parts that must fail safely and adds a local template workshop:
 
 - declarative templates with an explicit action allowlist;
 - exact HTTPS origin restrictions;
@@ -17,6 +17,10 @@ The first milestone validates the parts that must fail safely:
 - recovery state when a remote password changes but the vault cannot be updated;
 - CloudEvents-compatible local alerts with secret redaction;
 - a standalone local web interface;
+- a persistent Ed25519 signing identity whose private key is encrypted with AES-256-GCM;
+- private local storage directories and atomic JSON writes;
+- template creation, static validation, signing, export, and verified import;
+- explicit signer trust using an independently checked public-key fingerprint;
 - simulations for success, remote rejection, ambiguous verification, and vault synchronization failure.
 
 There is intentionally no real Vaultwarden adapter and no real Playwright runner in this release.
@@ -33,6 +37,8 @@ npm start
 
 Open <http://127.0.0.1:8787>. The server binds to loopback by default.
 
+Runtime data is stored in `.cro-data/` by default. Choose another private directory with `--data-dir /path` or `CRO_DATA_DIR`. The generated master key and encrypted signing identity are never committed.
+
 ## Security model
 
 CRO separates six responsibilities:
@@ -46,6 +52,8 @@ CRO separates six responsibilities:
 
 A template signature proves provenance, not safety. Signed templates remain subject to capability checks, domain restrictions, static validation, simulation, and runtime isolation.
 
+The local identity encryption currently relies on a separate `0600` master-key file owned by the same operating-system account. It protects against accidental disclosure and copied identity files, but not compromise of that account. Native OS keychain integration remains required before production use.
+
 Read:
 
 - [Architecture](docs/architecture.md)
@@ -54,6 +62,7 @@ Read:
 - [Event contract](docs/events.md)
 - [Roadmap](docs/roadmap.md)
 - [Security policy](SECURITY.md)
+- [Local storage and identity](docs/local-security.md)
 
 ## Project principles
 

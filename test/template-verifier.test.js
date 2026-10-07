@@ -64,3 +64,23 @@ test('rejects executable code embedded in a recipe', () => {
     (error) => error instanceof TemplateVerificationError && error.code === 'forbidden_code'
   );
 });
+
+test('rejects unexpected step fields even when no executable field is named', () => {
+  const { bundle, keys } = signedBundle({
+    steps: [{ action: 'click', selector: '#submit', payload: 'undeclared capability' }]
+  });
+  assert.throws(
+    () => verifyTemplateBundle(bundle, keys, new Date('2026-10-07T10:00:00Z')),
+    (error) => error instanceof TemplateVerificationError && error.code === 'unexpected_field'
+  );
+});
+
+test('applies the origin allowlist to URL assertions', () => {
+  const { bundle, keys } = signedBundle({
+    steps: [{ action: 'assert-url', url: 'https://attacker.invalid/completed' }]
+  });
+  assert.throws(
+    () => verifyTemplateBundle(bundle, keys, new Date('2026-10-07T10:00:00Z')),
+    (error) => error instanceof TemplateVerificationError && error.code === 'origin_violation'
+  );
+});

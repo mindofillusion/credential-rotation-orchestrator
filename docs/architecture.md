@@ -29,6 +29,10 @@ The runner receives one template, one credential, and one generated replacement.
 
 The public registry contains only signed templates, metadata, tests, revocations, and compatibility information. Clients pull registry metadata. The registry never connects to local installations.
 
+### Local template workshop
+
+The workshop creates declarative recipes, validates them, signs their manifests with the local Ed25519 identity, and persists them as private files. Imported bundles must match an expected SHA-256 and a pre-approved signer. The private signing key is encrypted at rest; OS keychain integration is still pending.
+
 ## Rotation transaction
 
 ```mermaid

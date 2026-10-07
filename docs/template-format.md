@@ -11,7 +11,7 @@ signature.json
 tests/
 ```
 
-The prototype represents this structure as one JSON object. A later archive format must preserve the same signed relationships.
+The local workshop represents this structure as one JSON object. Export returns that object and its canonical bundle SHA-256. A later archive format must preserve the same signed relationships.
 
 ## Manifest
 
@@ -59,3 +59,12 @@ revoked           execution prohibited
 ```
 
 Automatic execution is never granted solely because a template has a signature.
+
+## Import sequence
+
+1. Obtain the signer public key and fingerprint through independent channels.
+2. Approve the key only when its calculated fingerprint matches the expected value.
+3. Obtain the bundle and its expected SHA-256 through independent channels.
+4. Import only when the bundle digest, manifest signature, recipe digest, action allowlist, expiry, and origins all validate.
+
+The SHA-256 supplied next to an untrusted download is not an independent integrity check.

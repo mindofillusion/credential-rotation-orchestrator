@@ -13,10 +13,12 @@
 
 ## 0.2 — Local template workshop
 
-- [ ] persistent local database
-- [ ] operating-system-backed local signing identity
-- [ ] import/export bundles
-- [ ] template editor and static validator
+- [x] persistent local template store with atomic writes
+- [x] encrypted filesystem-backed local signing identity
+- [ ] operating-system keychain-backed local signing identity
+- [x] import/export bundles with expected SHA-256 verification
+- [x] explicit public-key trust by independently verified fingerprint
+- [x] template editor and static validator
 - [ ] Playwright Codegen ingestion and sanitization
 - [ ] replay against a purpose-built test website
 
