@@ -103,3 +103,16 @@ test('HTTP fixture requires explicit SIT policy and exactly the configured loopb
   bundle.recipe.steps[0].url='http://127.0.0.1:8224/altered';
   assert.throws(()=>verifyTemplateBundle(bundle,keys,now,{allowPhpbbSitLoopback:true}),{code:'digest_mismatch'});
 });
+
+test('forum SIT policy only permits the three fixed fixture origins',()=>{
+ const now=new Date('2026-10-07T10:00:00Z');
+ for(const port of [8224,8226,8227]) {
+  const {bundle,keys}=localFixture(`http://127.0.0.1:${port}`);
+  assert.throws(()=>verifyTemplateBundle(bundle,keys,now),{code:'invalid_origin'});
+  assert.equal(verifyTemplateBundle(bundle,keys,now,{allowForumSitLoopback:true}).trust,'signed');
+ }
+ for(const origin of ['http://127.0.0.1:8223','http://127.0.0.1:18082','http://localhost:8227','http://192.168.8.189:8227']) {
+  const {bundle,keys}=localFixture(origin);
+  assert.throws(()=>verifyTemplateBundle(bundle,keys,now,{allowForumSitLoopback:true}),{code:'invalid_origin'});
+ }
+});

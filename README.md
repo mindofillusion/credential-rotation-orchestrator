@@ -3,14 +3,14 @@
 Credential Rotation Orchestrator (CRO) is a local-first, vault-agnostic project for safely remediating compromised, weak, or reused credentials. It is designed to coordinate password changes on websites without sending credentials, browser sessions, or private history to a central service.
 
 > [!WARNING]
-> This repository is an early security prototype. The default mode uses a simulated vault and website runner. An explicit phpBB SIT mode now performs real rotations against a dedicated local test forum and Vaultwarden test account. Do not use production credentials.
+> This repository is an early security prototype. The default mode uses a simulated vault and website runner. An explicit forums SIT mode performs real rotations against dedicated local phpBB, MyBB and SMF fixtures and Vaultwarden test account. Do not use production credentials.
 
 ## Current prototype
 
 The current milestone validates the parts that must fail safely and adds a local template workshop:
 
 - declarative templates with an explicit action allowlist;
-- exact HTTPS origin restrictions by default; one fixed loopback HTTP origin is permitted only in explicitly enabled phpBB SIT mode;
+- exact HTTPS origin restrictions by default; three fixed loopback HTTP origins are permitted only in explicitly enabled forums SIT mode;
 - SHA-256 integrity checks bound to a signed manifest;
 - Ed25519 signature verification;
 - transaction states for remote change, independent verification, and vault update;
@@ -83,3 +83,7 @@ The code is suitable for design review and simulation only. See the roadmap befo
 ## License
 
 Apache License 2.0. See [LICENSE](LICENSE).
+
+### Panel de forums SIT
+
+Le frontend SIT prend désormais en charge phpBB 3.3.19, MyBB 1.8.41 et SMF 2.1.7 avec des parcours signés et des rotations réelles vers Vaultwarden SIT. Voir le [panel et les tests](sit/forums/README.md) et la [procédure de mise à jour](sit/forums/MISES-A-JOUR.md). Ces fixtures restent locales sur SER5 ; le coffre de test est hébergé sur le NAS.

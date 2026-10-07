@@ -29,14 +29,18 @@ const dataDirectory = normalize(
   argumentValue('--data-dir') || process.env.CRO_DATA_DIR || join(root, '.cro-data')
 );
 
-const sitEnabled = process.env.CRO_ENABLE_PHPBB_SIT === '1';
+const forumsEnabled=process.env.CRO_ENABLE_FORUMS_SIT === '1';
+const sitEnabled = forumsEnabled || process.env.CRO_ENABLE_PHPBB_SIT === '1';
+if(forumsEnabled && !isAbsolute(process.env.CRO_FORUMS_SIT_DIR || ''))throw new Error('Explicit forums fixture directory required');
 if (sitEnabled && (host !== '127.0.0.1' || !isAbsolute(process.env.CRO_PHPBB_SIT_DIR || '') || !isAbsolute(process.env.CRO_SIT_ACCESS_DIR || '') || !process.env.CRO_SIT_SSH_HOST)) {
   throw new Error('SIT mode requires loopback binding and explicit fixture/vault configuration');
 }
-const verificationPolicy = { allowPhpbbSitLoopback: sitEnabled };
+const verificationPolicy = { allowPhpbbSitLoopback: sitEnabled, allowForumSitLoopback: forumsEnabled };
 const sitToken = randomBytes(32).toString('hex');
 const events = new EventBus();
 const sit = sitEnabled ? new PhpbbSitController({directory:process.env.CRO_PHPBB_SIT_DIR,sourceRoot:root,events}) : null;
+const forums = new Map(sit ? [['phpbb',sit]] : []);
+if(forumsEnabled)for(const engine of ['mybb','smf'])forums.set(engine,new PhpbbSitController({engine,directory:join(process.env.CRO_FORUMS_SIT_DIR,engine),runtimeDirectory:process.env.CRO_PHPBB_SIT_DIR,sourceRoot:root,events}));
 const vault = new MockVaultAdapter([
   {
     id: 'demo-account',
@@ -76,6 +80,11 @@ if ((await templateRepository.list()).length === 0) {
 if (sitEnabled && !(await templateRepository.list()).some(t=>t.id==='org.phpbb.sit-password' && t.version==='0.1.0')) {
   const draft=JSON.parse(await readFile(join(root,'sit/phpbb/template-draft.json'),'utf8'));
   await templateService.create(draft);
+}
+
+if(forumsEnabled)for(const engine of ['mybb','smf']) {
+  const draft=JSON.parse(await readFile(join(root,`sit/forums/${engine}-template.json`),'utf8'));
+  if(!(await templateRepository.list()).some(t=>t.id===draft.id && t.version===draft.version))await templateService.create(draft);
 }
 
 async function simulationTemplate() {
@@ -155,12 +164,14 @@ const server = createServer(async (request, response) => {
 
   if (request.method === 'GET' && url.pathname === '/api/overview') {
     const sitState = sit ? await sit.state() : null;
-    const accounts = sitState ? (sitState.account ? [sitState.account] : []) : await vault.listEntries();
+    const forumStates=await Promise.all([...forums.values()].map(f=>f.state()));
+    const accounts = sitState ? forumStates.flatMap(f=>f.account?[f.account]:[]) : await vault.listEntries();
     const templates = await templateRepository.list();
     return json(response, 200, {
-      mode: sitEnabled ? 'phpBB SIT' : 'simulation',
+      mode: sitEnabled ? 'Forums SIT' : 'simulation',
       vault: { adapter: sitEnabled ? 'Vaultwarden SIT' : 'mock', connected: sitEnabled ? Boolean(sitState?.lastResult?.vaultUpdated) : true },
       sit: sitState,
+      forums: forumStates,
       sitToken: sitEnabled ? sitToken : undefined,
       identity: identity.publicIdentity(),
       templates,
@@ -201,17 +212,19 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  if (request.method === 'POST' && url.pathname === '/api/sit/phpbb/run') {
+  if (request.method === 'POST' && ['/api/sit/phpbb/run','/api/sit/forums/run'].includes(url.pathname)) {
     if (!sit) return json(response,404,{error:'SIT mode is disabled'});
     if (request.headers.origin !== `http://127.0.0.1:${port}` || request.headers['x-cro-sit-token'] !== sitToken || !acceptsMutation(request)) {
       return json(response,403,{error:'Same-origin SIT authorization required'});
     }
     try {
       const body=await readJson(request);
-      if(Object.keys(body).some(k=>!['id','version'].includes(k)))throw new Error('Unexpected fields');
+      if(Object.keys(body).some(k=>!['id','version','engine'].includes(k)))throw new Error('Unexpected fields');
+      const controller=forums.get(url.pathname==='/api/sit/phpbb/run'?'phpbb':body.engine);
+      if(!controller)throw new Error('Unknown fixture');
       const exported=await templateService.export(body.id,body.version);
       if(!exported) return json(response,404,{error:'Template not found'});
-      return json(response,200,await sit.run(exported.bundle,trustedKeys.keyMap()));
+      return json(response,200,await controller.run(exported.bundle,trustedKeys.keyMap()));
     } catch(error) {
       return json(response,400,{error:error.code ? `Template rejected: ${error.code}` : error.message});
     }
@@ -285,6 +298,6 @@ const server = createServer(async (request, response) => {
 
 server.listen(port, host, () => {
   console.log(`Credential Rotation Orchestrator listening on http://${host}:${port}`);
-  console.log(sitEnabled ? 'Mode: real phpBB SIT rotations on the fixed local fixture.' : 'Mode: simulation only; no real vault or website is accessed.');
+  console.log(sitEnabled ? 'Mode: real forum SIT rotations on the fixed local fixture.' : 'Mode: simulation only; no real vault or website is accessed.');
   console.log(`Local data: ${dataDirectory}`);
 });

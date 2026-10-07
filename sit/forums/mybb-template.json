@@ -1,0 +1,29 @@
+{
+  "id": "org.mybb.sit-password",
+  "version": "0.1.0",
+  "allowedOrigins": [
+    "http://127.0.0.1:8226"
+  ],
+  "steps": [
+    {
+      "action": "navigate",
+      "url": "http://127.0.0.1:8226/usercp.php?action=password"
+    },
+    {
+      "action": "fill-current-password",
+      "selector": "input[name=\"oldpassword\"]"
+    },
+    {
+      "action": "fill-new-password",
+      "selector": "input[name=\"password\"]"
+    },
+    {
+      "action": "fill-confirm-password",
+      "selector": "input[name=\"password2\"]"
+    },
+    {
+      "action": "click",
+      "selector": "form:has(input[name=\"oldpassword\"]) input[name=\"submit\"]"
+    }
+  ]
+}

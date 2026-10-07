@@ -1,0 +1,29 @@
+{
+  "id": "org.smf.sit-password",
+  "version": "0.1.0",
+  "allowedOrigins": [
+    "http://127.0.0.1:8227"
+  ],
+  "steps": [
+    {
+      "action": "navigate",
+      "url": "http://127.0.0.1:8227/index.php?action=profile;area=account"
+    },
+    {
+      "action": "fill-current-password",
+      "selector": "input[name=\"oldpasswrd\"]"
+    },
+    {
+      "action": "fill-new-password",
+      "selector": "input[name=\"passwrd1\"]"
+    },
+    {
+      "action": "fill-confirm-password",
+      "selector": "input[name=\"passwrd2\"]"
+    },
+    {
+      "action": "click",
+      "selector": "input[name=\"save\"]"
+    }
+  ]
+}
