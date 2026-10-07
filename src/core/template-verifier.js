@@ -1,4 +1,4 @@
-import { FORUM_SIT } from './sit-origins.js';
+import { FORUM_SIT, CMS_SIT } from './sit-origins.js';
 import { createHash, verify as verifySignature } from 'node:crypto';
 import { canonicalJson } from './canonical-json.js';
 
@@ -78,7 +78,7 @@ function validateRecipe(recipe, manifest, policy) {
       throw new TemplateVerificationError('invalid_origin', `Invalid origin: ${origin}`);
     }
     const sitLoopback = (policy.allowPhpbbSitLoopback === true && origin === FORUM_SIT.phpbb.origin) ||
-      (policy.allowForumSitLoopback === true && Object.values(FORUM_SIT).some(site=>site.origin===origin));
+      (policy.allowForumSitLoopback === true && Object.values(FORUM_SIT).some(site=>site.origin===origin)) || (policy.allowCmsSitLoopback === true && Object.values(CMS_SIT).some(site=>site.origin===origin));
     if ((!sitLoopback && parsed.protocol !== 'https:') || parsed.origin !== origin) {
       throw new TemplateVerificationError('invalid_origin', `Origin must be an exact HTTPS origin: ${origin}`);
     }

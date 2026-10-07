@@ -1,0 +1,25 @@
+{
+  "id": "org.joomla.sit-password",
+  "version": "0.1.0",
+  "allowedOrigins": [
+    "http://127.0.0.1:8231"
+  ],
+  "steps": [
+    {
+      "action": "navigate",
+      "url": "http://127.0.0.1:8231/index.php?option=com_users&view=profile&layout=edit"
+    },
+    {
+      "action": "fill-new-password",
+      "selector": "#jform_password1"
+    },
+    {
+      "action": "fill-confirm-password",
+      "selector": "#jform_password2"
+    },
+    {
+      "action": "click",
+      "selector": "button[name=\"task\"][value=\"profile.save\"]"
+    }
+  ]
+}

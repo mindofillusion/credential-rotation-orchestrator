@@ -29,18 +29,21 @@ const dataDirectory = normalize(
   argumentValue('--data-dir') || process.env.CRO_DATA_DIR || join(root, '.cro-data')
 );
 
+const cmsEnabled=process.env.CRO_ENABLE_CMS_SIT === '1';
+if(cmsEnabled && !isAbsolute(process.env.CRO_CMS_SIT_DIR || ''))throw new Error('Explicit CMS fixture directory required');
 const forumsEnabled=process.env.CRO_ENABLE_FORUMS_SIT === '1';
-const sitEnabled = forumsEnabled || process.env.CRO_ENABLE_PHPBB_SIT === '1';
+const sitEnabled = cmsEnabled || forumsEnabled || process.env.CRO_ENABLE_PHPBB_SIT === '1';
 if(forumsEnabled && !isAbsolute(process.env.CRO_FORUMS_SIT_DIR || ''))throw new Error('Explicit forums fixture directory required');
 if (sitEnabled && (host !== '127.0.0.1' || !isAbsolute(process.env.CRO_PHPBB_SIT_DIR || '') || !isAbsolute(process.env.CRO_SIT_ACCESS_DIR || '') || !process.env.CRO_SIT_SSH_HOST)) {
   throw new Error('SIT mode requires loopback binding and explicit fixture/vault configuration');
 }
-const verificationPolicy = { allowPhpbbSitLoopback: sitEnabled, allowForumSitLoopback: forumsEnabled };
+const verificationPolicy = { allowPhpbbSitLoopback: sitEnabled, allowForumSitLoopback: forumsEnabled, allowCmsSitLoopback:cmsEnabled };
 const sitToken = randomBytes(32).toString('hex');
 const events = new EventBus();
 const sit = sitEnabled ? new PhpbbSitController({directory:process.env.CRO_PHPBB_SIT_DIR,sourceRoot:root,events}) : null;
 const forums = new Map(sit ? [['phpbb',sit]] : []);
 if(forumsEnabled)for(const engine of ['mybb','smf'])forums.set(engine,new PhpbbSitController({engine,directory:join(process.env.CRO_FORUMS_SIT_DIR,engine),runtimeDirectory:process.env.CRO_PHPBB_SIT_DIR,sourceRoot:root,events}));
+if(cmsEnabled)for(const engine of ['wordpress','joomla','drupal'])forums.set(engine,new PhpbbSitController({engine,directory:join(process.env.CRO_CMS_SIT_DIR,engine),runtimeDirectory:process.env.CRO_PHPBB_SIT_DIR,sourceRoot:root,events}));
 const vault = new MockVaultAdapter([
   {
     id: 'demo-account',
@@ -85,6 +88,11 @@ if (sitEnabled && !(await templateRepository.list()).some(t=>t.id==='org.phpbb.s
 if(forumsEnabled)for(const engine of ['mybb','smf']) {
   const draft=JSON.parse(await readFile(join(root,`sit/forums/${engine}-template.json`),'utf8'));
   if(!(await templateRepository.list()).some(t=>t.id===draft.id && t.version===draft.version))await templateService.create(draft);
+}
+
+if(cmsEnabled)for(const engine of ['wordpress','joomla','drupal']) {
+ const draft=JSON.parse(await readFile(join(root,`sit/cms/${engine}-template.json`),'utf8'));
+ if(!(await templateRepository.list()).some(t=>t.id===draft.id&&t.version===draft.version))await templateService.create(draft);
 }
 
 async function simulationTemplate() {
@@ -168,7 +176,7 @@ const server = createServer(async (request, response) => {
     const accounts = sitState ? forumStates.flatMap(f=>f.account?[f.account]:[]) : await vault.listEntries();
     const templates = await templateRepository.list();
     return json(response, 200, {
-      mode: sitEnabled ? 'Forums SIT' : 'simulation',
+      mode: sitEnabled ? 'Sites SIT' : 'simulation',
       vault: { adapter: sitEnabled ? 'Vaultwarden SIT' : 'mock', connected: sitEnabled ? Boolean(sitState?.lastResult?.vaultUpdated) : true },
       sit: sitState,
       forums: forumStates,

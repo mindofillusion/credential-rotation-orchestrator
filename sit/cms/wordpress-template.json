@@ -1,0 +1,29 @@
+{
+  "id": "org.wordpress.sit-password",
+  "version": "0.1.0",
+  "allowedOrigins": [
+    "http://127.0.0.1:8230"
+  ],
+  "steps": [
+    {
+      "action": "navigate",
+      "url": "http://127.0.0.1:8230/wp-admin/profile.php"
+    },
+    {
+      "action": "click",
+      "selector": "button.wp-generate-pw"
+    },
+    {
+      "action": "fill-new-password",
+      "selector": "#pass1"
+    },
+    {
+      "action": "click",
+      "selector": "#submit"
+    },
+    {
+      "action": "assert-text",
+      "value": "Profile updated."
+    }
+  ]
+}

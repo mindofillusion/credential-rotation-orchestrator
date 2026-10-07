@@ -87,3 +87,7 @@ Apache License 2.0. See [LICENSE](LICENSE).
 ### Panel de forums SIT
 
 Le frontend SIT prend désormais en charge phpBB 3.3.19, MyBB 1.8.41 et SMF 2.1.7 avec des parcours signés et des rotations réelles vers Vaultwarden SIT. Voir le [panel et les tests](sit/forums/README.md) et la [procédure de mise à jour](sit/forums/MISES-A-JOUR.md). Ces fixtures restent locales sur SER5 ; le coffre de test est hébergé sur le NAS.
+
+### Panel CMS SIT
+
+WordPress 7.1.3, Joomla 6.1.4 et Drupal 11.4.8 disposent de recettes signées qualifiées avec Vaultwarden SIT. Le [dossier CMS](sit/cms/README.md) décrit les comptes de test, les validations et la procédure de mise à jour. L'activation reste explicite et limitée aux origines locales fixes.

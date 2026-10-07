@@ -116,3 +116,17 @@ test('forum SIT policy only permits the three fixed fixture origins',()=>{
   assert.throws(()=>verifyTemplateBundle(bundle,keys,now,{allowForumSitLoopback:true}),{code:'invalid_origin'});
  }
 });
+
+test('CMS loopback permission is explicit and independent of forum permission',()=>{
+ const now=new Date('2026-10-07T10:00:00Z');
+ for(const port of [8230,8231,8232]) {
+  const {bundle,keys}=localFixture(`http://127.0.0.1:${port}`);
+  assert.throws(()=>verifyTemplateBundle(bundle,keys,now),{code:'invalid_origin'});
+  assert.throws(()=>verifyTemplateBundle(bundle,keys,now,{allowForumSitLoopback:true}),{code:'invalid_origin'});
+  assert.equal(verifyTemplateBundle(bundle,keys,now,{allowCmsSitLoopback:true}).trust,'signed');
+ }
+ for(const origin of ['http://127.0.0.1:8223','http://127.0.0.1:18082','http://localhost:8230','http://example.invalid:8230']) {
+  const {bundle,keys}=localFixture(origin);
+  assert.throws(()=>verifyTemplateBundle(bundle,keys,now,{allowCmsSitLoopback:true}),{code:'invalid_origin'});
+ }
+});

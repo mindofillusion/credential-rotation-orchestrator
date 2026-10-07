@@ -114,8 +114,8 @@ async function loadOverview() {
   document.querySelector('#phpbb-sit-panel').hidden=!enabled;
   document.querySelector('#simulation-panel').hidden=enabled;
   if(enabled) {
-    document.querySelector('#notice-title').textContent='Environnement forums SIT';
-    document.querySelector('#notice-description').textContent='Les rotations modifient uniquement le compte du forum local de test et son entrée Vaultwarden SIT.';
+    document.querySelector('#notice-title').textContent='Environnement sites SIT';
+    document.querySelector('#notice-description').textContent='Les rotations modifient uniquement le compte du site local de test et son entrée Vaultwarden SIT.';
     document.querySelector('#notice-badge').textContent='Compte de test réel';
     const engineSelect=document.querySelector('#sit-engine');
     const previousEngine=engineSelect.value;

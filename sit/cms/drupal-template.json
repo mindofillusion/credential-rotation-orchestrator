@@ -1,0 +1,37 @@
+{
+  "id": "org.drupal.sit-password",
+  "version": "0.1.0",
+  "allowedOrigins": [
+    "http://127.0.0.1:8232"
+  ],
+  "steps": [
+    {
+      "action": "navigate",
+      "url": "http://127.0.0.1:8232/user"
+    },
+    {
+      "action": "click",
+      "selector": "a[href$=\"/edit\"]"
+    },
+    {
+      "action": "fill-current-password",
+      "selector": "#edit-current-pass"
+    },
+    {
+      "action": "fill-new-password",
+      "selector": "#edit-pass-pass1"
+    },
+    {
+      "action": "fill-confirm-password",
+      "selector": "#edit-pass-pass2"
+    },
+    {
+      "action": "click",
+      "selector": "#edit-submit"
+    },
+    {
+      "action": "assert-text",
+      "value": "The changes have been saved."
+    }
+  ]
+}

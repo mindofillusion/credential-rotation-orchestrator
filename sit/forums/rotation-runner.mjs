@@ -1,4 +1,4 @@
-import { FORUM_SIT } from '../../src/core/sit-origins.js';
+import { ALL_SIT } from '../../src/core/sit-origins.js';
 // Controlled, loopback-only forum integration test. No arbitrary templates or hosts.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -7,10 +7,10 @@ import { verifyTemplateBundle } from '../../src/core/template-verifier.js';
 import { RotationOrchestrator } from '../../src/core/rotation-orchestrator.js';
 import { EventBus } from '../../src/core/event-bus.js';
 import { api, encrypt, decrypt, connectExistingVault } from '../access/account-smoke.mjs';
-const root = process.env.CRO_FORUM_SIT_DIR || process.env.CRO_PHPBB_SIT_DIR;
+const root = process.env.CRO_ALL_SIT_DIR || process.env.CRO_PHPBB_SIT_DIR;
 const engine = process.env.CRO_FORUM_ENGINE || 'phpbb';
-if(!Object.hasOwn(FORUM_SIT,engine))throw new Error('Unknown forum engine');
-const fixture=FORUM_SIT[engine];
+if(!Object.hasOwn(ALL_SIT,engine))throw new Error('Unknown forum engine');
+const fixture=ALL_SIT[engine];
 const runtime = process.env.CRO_BROWSER_RUNTIME_DIR || process.env.CRO_PHPBB_SIT_DIR;
 if(!runtime?.startsWith('/'))throw new Error('Missing browser runtime');
 if (!root?.startsWith('/')) throw new Error('Set CRO_PHPBB_SIT_DIR');
@@ -38,26 +38,29 @@ async function context() {
 async function login(c, username, password) {
   const page=await c.newPage();
   const loginConfig={
+    wordpress:{url:'/wp-login.php',user:'#user_login',password:'#user_pass',submit:'#wp-submit',check:'/wp-admin/profile.php',logout:'#your-profile'},
+    joomla:{url:'/index.php?option=com_users&view=login',user:'#com-users-login__form input[name="username"]',password:'#com-users-login__form input[name="password"]',submit:'#com-users-login__form button[type="submit"]',logout:'form:has(input[value="user.logout"]) button[type="submit"]'},
+    drupal:{url:'/user/login',user:'#edit-name',password:'#edit-pass',submit:'#edit-submit',check:'/user',logout:'a[href$="/edit"]'},
     phpbb:{url:'/ucp.php?mode=login',user:'#username',password:'#password',submit:'input[name="login"]',logout:'a[href*="mode=logout"]'},
     mybb:{url:'/member.php?action=login',user:'input[name="username"]',password:'input[name="password"]',submit:'form:has(input[name="username"]) input[type="submit"]',logout:'a[href*="action=logout"]'},
     smf:{url:'/index.php?action=login',user:'input[name="user"]',password:'input[name="passwrd"]',submit:'form:has(input[name="user"]) input[type="submit"]',logout:'a[href*="action=logout"]'}
   }[engine];
   // SMF saves its session only once a cookie is present: warm up before the login form.
-  await page.goto(origin+'/index.php');
+  await page.goto(origin+(loginConfig.check||'/index.php'));
   await page.goto(origin+loginConfig.url);
   await page.locator(loginConfig.user).fill(username);
   await page.locator(loginConfig.password).fill(password);
   await page.waitForTimeout(1500);
   await Promise.all([page.waitForNavigation({waitUntil:'domcontentloaded'}),page.locator(loginConfig.submit).click()]);
   // Some engines show an intermediate redirect page after authentication.
-  await page.goto(origin+'/index.php');
+  await page.goto(origin+(loginConfig.check||'/index.php'));
   const accepted=await page.locator(loginConfig.logout).count()>0;
   return {page,accepted};
 }
 async function main() {
   step='verify-template';
   const envelope=JSON.parse(fs.readFileSync(0,'utf8'));
-  const template=verifyTemplateBundle(envelope.bundle,new Map(envelope.trustedKeys),new Date(),{allowForumSitLoopback:true});
+  const template=verifyTemplateBundle(envelope.bundle,new Map(envelope.trustedKeys),new Date(),{allowForumSitLoopback:true,allowCmsSitLoopback:true});
   if(template.manifest.allowedOrigins.length!==1 || template.manifest.allowedOrigins[0]!==origin)throw new Error('Wrong SIT origin');
   if(!['browser:navigate','browser:form-fill'].every(p=>template.manifest.permissions.includes(p)))throw new Error('Missing permissions');
   const supported=new Set(['navigate','fill-current-password','fill-new-password','fill-confirm-password','click','wait-for','assert-text','assert-url']);
@@ -107,7 +110,8 @@ async function main() {
         else if (action.action==='click') {
           await page.waitForTimeout(1500);
           submitted=true;
-          await Promise.all([page.waitForNavigation({waitUntil:'domcontentloaded'}),page.locator(action.selector).click()]);
+          await page.locator(action.selector).click();
+          await page.waitForLoadState('domcontentloaded');
         } else if (action.action==='wait-for') await page.locator(action.selector).waitFor({timeout:action.timeoutMs??15000});
         else if (action.action==='assert-text') {
           const content=await page.locator(action.selector??'body').innerText();

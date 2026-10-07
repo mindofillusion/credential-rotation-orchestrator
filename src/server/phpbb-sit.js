@@ -3,26 +3,26 @@ import { readFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { verifyTemplateBundle } from '../core/template-verifier.js';
 
-import { FORUM_SIT } from '../core/sit-origins.js';
-const policy = { allowForumSitLoopback: true };
+import { ALL_SIT } from '../core/sit-origins.js';
+const policy = { allowForumSitLoopback: true, allowCmsSitLoopback:true };
 const exists = file => access(file).then(()=>true,()=>false);
 export class PhpbbSitController {
   constructor({ directory, sourceRoot, events, engine = 'phpbb', runtimeDirectory = directory }) {
-    if(!Object.hasOwn(FORUM_SIT,engine))throw new Error('Unknown fixture');
-    this.engine=engine;this.origin=FORUM_SIT[engine].origin;this.runtimeDirectory=runtimeDirectory;
+    if(!Object.hasOwn(ALL_SIT,engine))throw new Error('Unknown fixture');
+    this.engine=engine;this.origin=ALL_SIT[engine].origin;this.runtimeDirectory=runtimeDirectory;
     this.directory=directory;this.sourceRoot=sourceRoot;this.events=events;this.running=false;
   }
   async state() {
     let account=null,lastResult=null;
     try {
       const s=JSON.parse(await readFile(join(this.directory,'forum-secrets.json'),'utf8'));
-      account={id:`${this.engine}-sit`,username:s.username,origin:this.origin,site:`${FORUM_SIT[this.engine].name} SIT`};
+      account={id:`${this.engine}-sit`,username:s.username,origin:this.origin,site:`${ALL_SIT[this.engine].name} SIT`};
     } catch {}
     try {
       const r=JSON.parse(await readFile(join(this.directory,'rotation-result.json'),'utf8'));
       lastResult=Object.fromEntries(['status','remoteChanged','vaultUpdated','completedAt','templateId','templateVersion','templateDigest','newPasswordLogin','oldPasswordRejected','vaultReadbackLogin'].filter(k=>k in r).map(k=>[k,r[k]]));
     } catch {}
-    return {enabled:true,engine:this.engine,name:FORUM_SIT[this.engine].name,origin:this.origin,account,running:this.running || await exists(join(this.directory,'rotation.lock')),recoveryPending:await exists(join(this.directory,'rotation-pending.json')),lastResult};
+    return {enabled:true,engine:this.engine,name:ALL_SIT[this.engine].name,origin:this.origin,account,running:this.running || await exists(join(this.directory,'rotation.lock')),recoveryPending:await exists(join(this.directory,'rotation-pending.json')),lastResult};
   }
   async run(bundle,keys) {
     if(this.running)throw new Error('Une rotation est déjà en cours.');
@@ -39,7 +39,7 @@ export class PhpbbSitController {
         const child=spawn(process.execPath,[join(this.sourceRoot,'sit/forums/rotation-runner.mjs')],{
           cwd:this.directory,stdio:['pipe','ignore','ignore'],
           env:{PATH:process.env.PATH,HOME:process.env.HOME,
-            CRO_FORUM_ENGINE:this.engine,CRO_FORUM_SIT_DIR:this.directory,CRO_BROWSER_RUNTIME_DIR:this.runtimeDirectory,CRO_SIT_ACCESS_DIR:process.env.CRO_SIT_ACCESS_DIR,
+            CRO_FORUM_ENGINE:this.engine,CRO_ALL_SIT_DIR:this.directory,CRO_BROWSER_RUNTIME_DIR:this.runtimeDirectory,CRO_SIT_ACCESS_DIR:process.env.CRO_SIT_ACCESS_DIR,
             CRO_SIT_SSH_HOST:process.env.CRO_SIT_SSH_HOST,
             PLAYWRIGHT_BROWSERS_PATH:join(this.runtimeDirectory,'browsers'),
             LD_LIBRARY_PATH:join(this.runtimeDirectory,'runtime/usr/lib/x86_64-linux-gnu')}
