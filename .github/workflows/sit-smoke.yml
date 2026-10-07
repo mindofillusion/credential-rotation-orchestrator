@@ -1,0 +1,27 @@
+name: Vaultwarden SIT smoke
+on:
+  push:
+    branches: [main]
+    paths: ['sit/**', '.github/workflows/sit-smoke.yml']
+  pull_request:
+    paths: ['sit/**', '.github/workflows/sit-smoke.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  vaultwarden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate and start isolated vault
+        run: |
+          docker compose -f sit/compose.yaml config --quiet
+          docker compose -f sit/compose.yaml up -d
+      - name: Wait for vault and validate configuration
+        run: |
+          curl --fail --retry 30 --retry-connrefused --retry-delay 2 --max-time 5 http://localhost:8223/alive
+          curl --fail --max-time 5 http://localhost:8223/api/config | python3 -c 'import json,sys; c=json.load(sys.stdin); assert c["object"] == "config"'
+      - name: Remove ephemeral test vault
+        if: always()
+        run: docker compose -f sit/compose.yaml down --volumes
