@@ -20,7 +20,10 @@ LOCK = threading.Lock()
 VERBS = {'status', 'start', 'stop', 'restart', 'registrations-open', 'registrations-close', 'http'}
 ROUTES = {
     ('GET', '/alive'), ('GET', '/api/config'), ('GET', '/api/sync'),
-    ('POST', '/identity/accounts/prelogin'), ('POST', '/identity/connect/token'),
+    ('POST', '/identity/accounts/prelogin'), ('POST', '/identity/accounts/prelogin/password'),
+    ('POST', '/identity/connect/token'),
+    ('POST', '/identity/accounts/register/send-verification-email'),
+    ('POST', '/identity/accounts/register/finish'),
     ('POST', '/api/accounts/register'), ('POST', '/api/accounts/register/finish'),
     ('POST', '/api/accounts/register/send-verification-email'),
     ('POST', '/api/accounts/register/verify-email'),
