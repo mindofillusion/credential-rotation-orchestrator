@@ -1,0 +1,49 @@
+name: SIT scoped access
+on:
+  push:
+    paths: ['sit/**', '.github/workflows/sit-access.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  access:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scope unit tests
+        run: python3 -m unittest discover -s sit/access -p 'test_*.py' -v
+      - name: Prepare isolated DSM-like fixture
+        run: |
+          sudo mkdir -p /volume1/docker/cro-sit/data
+          sudo chmod 700 /volume1/docker/cro-sit /volume1/docker/cro-sit/data
+          sudo cp sit/compose.yaml sit/proxy.mjs /volume1/docker/cro-sit/
+          printf 'services:\n  vaultwarden:\n    volumes:\n      - /volume1/docker/cro-sit/data:/data\n' | sudo tee /volume1/docker/cro-sit/compose.nas.yaml >/dev/null
+          if [ ! -e /usr/local/bin/docker ]; then sudo ln -s "$(command -v docker)" /usr/local/bin/docker; fi
+          sudo useradd -m crotest
+          sudo install -d -m 700 -o crotest -g crotest /home/crotest/.ssh
+          ssh-keygen -q -t ed25519 -N '' -C ci -f /tmp/cro-ci-key
+          KEY=$(cat /tmp/cro-ci-key.pub)
+          printf '%s %s\n' "from=\"127.0.0.1\",command=\"/bin/sh -c 'echo cro-sit-access=ok; id; hostname'\",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty,no-user-rc" "$KEY" | sudo tee /home/crotest/.ssh/authorized_keys >/dev/null
+          sudo chown crotest:crotest /home/crotest/.ssh/authorized_keys
+          sudo chmod 600 /home/crotest/.ssh/authorized_keys
+          sudo /usr/local/bin/docker compose -p cro-sit -f /volume1/docker/cro-sit/compose.yaml -f /volume1/docker/cro-sit/compose.nas.yaml up -d
+          docker run -d --name outside-sit node:24-alpine sleep 600
+          sudo python3 -I sit/access/install.py --account crotest --source 127.0.0.1 --public-key "$KEY"
+      - name: Exercise broker and verify neighboring container
+        run: |
+          client() { sudo -u crotest env SSH_ORIGINAL_COMMAND=cro-sit /volume1/docker/cro-sit-access/bin/client; }
+          printf '%s\n' '{"action":"status"}' | client | python3 -c 'import json,sys; assert json.load(sys.stdin)["ok"]'
+          curl --retry 12 --retry-delay 2 --retry-all-errors -fsS http://127.0.0.1:8223/alive
+          printf '%s\n' '{"action":"http","method":"GET","path":"/alive"}' | client | python3 -c 'import json,sys; assert json.load(sys.stdin)["status"] == 200'
+          printf '%s\n' '{"action":"stop"}' | client | python3 -c 'import json,sys; assert json.load(sys.stdin)["ok"]'
+          test "$(docker inspect -f '{{.State.Running}}' outside-sit)" = true
+          printf '%s\n' '{"action":"start"}' | client | python3 -c 'import json,sys; assert json.load(sys.stdin)["ok"]'
+          if printf '%s\n' '{"action":"exec","command":"id"}' | client; then exit 1; fi
+          if printf '%s\n' '{"action":"http","method":"GET","path":"/admin"}' | client; then exit 1; fi
+          if sudo -u crotest cat /volume1/docker/cro-sit-access/config.json; then exit 1; fi
+          if sudo -u crotest test -w /volume1/docker/cro-sit-access/bin/broker.py; then exit 1; fi
+          printf '%s\n' '{"action":"registrations-open"}' | client | python3 -c 'import json,sys; assert json.load(sys.stdin)["ok"]'
+          test "$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' cro-sit-vaultwarden-1 | sed -n 's/^SIGNUPS_ALLOWED=//p')" = true
+          printf '%s\n' '{"action":"registrations-close"}' | client | python3 -c 'import json,sys; assert json.load(sys.stdin)["ok"]'
+          test "$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' cro-sit-vaultwarden-1 | sed -n 's/^SIGNUPS_ALLOWED=//p')" = false
