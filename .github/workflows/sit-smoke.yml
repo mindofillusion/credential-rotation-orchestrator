@@ -20,7 +20,7 @@ jobs:
           docker compose -f sit/compose.yaml up -d
       - name: Wait for vault and validate configuration
         run: |
-          curl --fail --retry 30 --retry-connrefused --retry-delay 2 --max-time 5 http://localhost:8223/alive
+          curl --fail --retry 30 --retry-all-errors --retry-delay 2 --max-time 5 http://localhost:8223/alive
           curl --fail --max-time 5 http://localhost:8223/api/config | python3 -c 'import json,sys; c=json.load(sys.stdin); assert c["object"] == "config"'
       - name: Diagnose startup failure
         if: failure()
