@@ -22,6 +22,25 @@ const elements = {
 
 let eventHistory = [];
 
+document.querySelector('#convert-codegen').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const output = document.querySelector('#convert-result');
+  const source = document.querySelector('#recording');
+  try {
+    const result = await api('/api/templates/convert-codegen', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ source: source.value,
+        allowedOrigin: document.querySelector('#template-origin').value.trim(),
+        bindings: JSON.parse(document.querySelector('#recording-bindings').value) })
+    });
+    document.querySelector('#template-steps').value = JSON.stringify(result.steps, null, 2);
+    source.value = '';
+    output.textContent = `Brouillon créé : ${result.removedValues} valeur(s) supprimée(s). Relisez les étapes avant signature ; aucune vérification de succès n’est encore définie.`;
+  } catch {
+    output.textContent = 'Conversion refusée. Vérifiez la syntaxe prise en charge, les associations et l’origine HTTPS.';
+  }
+});
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll('&', '&amp;')

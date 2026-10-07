@@ -3,7 +3,7 @@
 Credential Rotation Orchestrator (CRO) is a local-first, vault-agnostic project for safely remediating compromised, weak, or reused credentials. It is designed to coordinate password changes on websites without sending credentials, browser sessions, or private history to a central service.
 
 > [!WARNING]
-> This repository is an early security prototype. Version `0.2.0` uses a simulated vault and simulated website runner. It must not be used with real credentials yet.
+> This repository is an early security prototype. Version `0.2.1` uses a simulated vault and simulated website runner. It must not be used with real credentials yet.
 
 ## Current prototype
 
@@ -63,6 +63,7 @@ Read:
 - [Roadmap](docs/roadmap.md)
 - [Security policy](SECURITY.md)
 - [Local storage and identity](docs/local-security.md)
+- [Playwright action-fragment import and limitations](docs/codegen-import.md)
 
 ## Project principles
 

@@ -1,4 +1,4 @@
-import { mkdir, readFile, rename, chmod, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, chmod, writeFile, link, unlink } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
@@ -16,7 +16,7 @@ export async function readJsonFile(path, fallback = null) {
   }
 }
 
-export async function writeJsonAtomic(path, value) {
+export async function writeJsonAtomic(path, value, { exclusive = false } = {}) {
   await ensurePrivateDirectory(dirname(path));
   const temporary = `${path}.${randomUUID()}.tmp`;
   await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`, {
@@ -24,6 +24,10 @@ export async function writeJsonAtomic(path, value) {
     mode: 0o600,
     flag: 'wx'
   });
-  await rename(temporary, path);
-  await chmod(path, 0o600);
+  try {
+    if (exclusive) await link(temporary, path);
+    else await rename(temporary, path);
+  } finally {
+    await unlink(temporary).catch((error) => { if (error.code !== 'ENOENT') throw error; });
+  }
 }

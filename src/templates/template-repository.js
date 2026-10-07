@@ -33,7 +33,12 @@ export class TemplateRepository {
       digest: verified.digest,
       bundle
     };
-    await writeJsonAtomic(path, record);
+    try {
+      await writeJsonAtomic(path, record, { exclusive: true });
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+      return this.install(bundle, verified, provenance);
+    }
     return this.#summary(record);
   }
 

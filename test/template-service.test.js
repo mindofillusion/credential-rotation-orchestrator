@@ -31,6 +31,16 @@ const draft = {
   steps: [{ action: 'navigate', url: 'https://example.com/.well-known/change-password' }]
 };
 
+test('concurrent installs cannot overwrite an existing version', async () => {
+  const context = await services('cro-concurrent-');
+  const results = await Promise.allSettled([
+    context.service.create(draft),
+    context.service.create({ ...draft, steps: [{ action: 'navigate', url: 'https://example.com/other' }] })
+  ]);
+  assert.equal(results.filter((r) => r.status === 'fulfilled').length, 1);
+  assert.equal((await context.repository.list()).length, 1);
+});
+
 test('creates, signs, persists and exports a local template', async () => {
   const context = await services('cro-template-create-');
   const created = await context.service.create(draft);

@@ -19,7 +19,8 @@
 - [x] import/export bundles with expected SHA-256 verification
 - [x] explicit public-key trust by independently verified fingerprint
 - [x] template editor and static validator
-- [ ] Playwright Codegen ingestion and sanitization
+- [x] strict Playwright action-fragment ingestion with fill-value removal
+- [ ] full Codegen locator support and recorder integration
 - [ ] replay against a purpose-built test website
 
 ## 0.3 — Vaultwarden integration

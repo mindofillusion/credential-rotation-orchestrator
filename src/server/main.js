@@ -12,6 +12,7 @@ import { LocalIdentity } from '../security/local-identity.js';
 import { TemplateRepository } from '../templates/template-repository.js';
 import { TemplateService } from '../templates/template-service.js';
 import { TrustedKeyStore } from '../templates/trusted-key-store.js';
+import { convertCodegen } from '../templates/codegen-importer.js';
 
 const root = normalize(join(fileURLToPath(new URL('.', import.meta.url)), '../..'));
 const publicRoot = join(root, 'public');
@@ -202,6 +203,16 @@ const server = createServer(async (request, response) => {
     } catch (error) {
       vault.failUpdates = false;
       return json(response, 400, { error: error.message });
+    }
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/templates/convert-codegen') {
+    if (!acceptsMutation(request)) return json(response, 403, { error: 'Cross-site mutation rejected' });
+    try {
+      return json(response, 200, convertCodegen(await readJson(request)));
+    } catch {
+      // Never reflect parser input or JSON syntax errors containing recorded secrets.
+      return json(response, 400, { error: 'Recording rejected. Check the supported syntax, origin and field bindings.' });
     }
   }
 

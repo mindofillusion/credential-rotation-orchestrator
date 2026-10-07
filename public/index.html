@@ -99,6 +99,17 @@
         <code id="identity-fingerprint">—</code>
       </section>
 
+      <form class="panel form-stack" id="convert-codegen">
+        <h2>Convertir un extrait Playwright</h2>
+        <p>Collez uniquement les lignes await page.goto et await page.locator(...).fill/click. Utilisez des identifiants fictifs lors de l’enregistrement. Les valeurs fill seront supprimées ; relisez aussi les URL et sélecteurs.</p>
+        <label for="recording">Actions enregistrées</label>
+        <textarea id="recording" rows="6" spellcheck="false" required></textarea>
+        <label for="recording-bindings">Association des sélecteurs aux champs de mot de passe (JSON)</label>
+        <textarea id="recording-bindings" rows="4" spellcheck="false">{"#current-password":"fill-current-password","#new-password":"fill-new-password","#confirm-password":"fill-confirm-password"}</textarea>
+        <button class="secondary" type="submit">Convertir vers l’éditeur</button>
+        <output id="convert-result" aria-live="polite">L’origine HTTPS est celle renseignée dans l’éditeur ci-dessous. La conversion produit un brouillon à relire.</output>
+      </form>
+
       <div class="workshop-grid">
         <form class="panel form-stack" id="create-template">
           <div class="panel-heading"><div><p class="eyebrow">Éditeur statique</p><h2>Nouveau template</h2></div></div>
