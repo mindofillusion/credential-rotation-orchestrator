@@ -1,5 +1,6 @@
 // Dedicated SIT account and encrypted CRUD smoke test. Never use for production secrets.
 import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 const dir = process.env.CRO_SIT_ACCESS_DIR;
@@ -113,4 +114,21 @@ async function main() {
     if (id) { api('DELETE',`/api/ciphers/${id}`,undefined,login.access_token); console.log('sit-test-item-delete=ok'); }
   }
 }
-main().catch(error=>{console.error(error.message);process.exitCode=1;});
+export { api, encrypt, decrypt };
+export function connectExistingVault() {
+  const info = fs.lstatSync(secretPath);
+  if (!info.isFile() || (info.mode & 0o077)) throw new Error('Unsafe credential file');
+  const secret = JSON.parse(fs.readFileSync(secretPath));
+  if (secret.email !== email || !secret.registered) throw new Error('Expected existing SIT account');
+  const master = crypto.pbkdf2Sync(secret.password,email,600000,32,'sha256');
+  const hash = crypto.pbkdf2Sync(master,secret.password,1,32,'sha256').toString('base64');
+  const expand = label => crypto.createHmac('sha256',master).update(Buffer.concat([Buffer.from(label),Buffer.from([1])])).digest();
+  const stretched = Buffer.concat([expand('enc'),expand('mac')]);
+  const form = new URLSearchParams({grant_type:'password',username:email,password:hash,scope:'api offline_access',client_id:'cli',deviceType:'8',deviceIdentifier:secret.device,deviceName:'CRO SIT'}).toString();
+  const login = api('POST','/identity/connect/token',form,undefined,true);
+  if (!login.access_token || !login.Key) throw new Error('Incomplete login');
+  return {token:login.access_token,key:decrypt(login.Key,stretched)};
+}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch(error=>{console.error(error.message);process.exitCode=1;});
+}

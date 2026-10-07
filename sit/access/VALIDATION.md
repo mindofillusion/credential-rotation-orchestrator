@@ -33,9 +33,9 @@ réconciliation ; ne pas supprimer le fichier ni générer un autre mot de passe
 
 - Tâche de démarrage DSM : configuration et reprise après redémarrage non confirmées.
 - Compatibilité du compte avec les clients officiels Bitwarden non testée.
-- Adaptateur intégré à l'orchestrateur et interface utilisateur non livrés par ce test.
-- Changement effectif sur un site web de démonstration, reconnexion avec le nouveau
-  mot de passe et synchronisation du coffre : non encore exécutés.
+- Un adaptateur SIT est maintenant exercé par le cœur de l'orchestrateur ; interface utilisateur non encore intégrée.
+- Changement effectif sur phpBB, reconnexion et synchronisation du coffre :
+  deux rotations réussies le 7 octobre, voir [validation phpBB](../phpbb/README.md).
 
-Le succès de ce test valide l'intégration au coffre, pas encore une rotation web
-complète de bout en bout.
+Ce test initial valide l'intégration au coffre. Le test phpBB complémentaire
+valide désormais une rotation web complète dans la fixture contrôlée.
