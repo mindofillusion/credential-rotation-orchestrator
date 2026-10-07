@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { verifyTemplateBundle } from '../../src/core/template-verifier.js';
 import { RotationOrchestrator } from '../../src/core/rotation-orchestrator.js';
 import { EventBus } from '../../src/core/event-bus.js';
 import { api, encrypt, decrypt, connectExistingVault } from '../access/account-smoke.mjs';
@@ -38,6 +39,13 @@ async function login(c, username, password) {
   return {page,accepted};
 }
 async function main() {
+  step='verify-template';
+  const envelope=JSON.parse(fs.readFileSync(0,'utf8'));
+  const template=verifyTemplateBundle(envelope.bundle,new Map(envelope.trustedKeys),new Date(),{allowPhpbbSitLoopback:true});
+  if(template.manifest.allowedOrigins.length!==1 || template.manifest.allowedOrigins[0]!==origin)throw new Error('Wrong SIT origin');
+  if(!['browser:navigate','browser:form-fill'].every(p=>template.manifest.permissions.includes(p)))throw new Error('Missing permissions');
+  const supported=new Set(['navigate','fill-current-password','fill-new-password','fill-confirm-password','click','wait-for','assert-text','assert-url']);
+  if(template.recipe.steps.some(s=>!supported.has(s.action)))throw new Error('Unsupported SIT action');
   if (fs.existsSync(journalPath)) throw new Error('Pending rotation requires reconciliation');
   const secret = privateRead(secretsPath);
   const {token,key} = connectExistingVault();
@@ -73,16 +81,23 @@ async function main() {
       if(!accepted)throw new Error('Baseline login rejected');
       console.log('phpbb-baseline-login=ok');
       step='change-password';
-      await page.goto(origin+'/ucp.php?i=ucp_profile&mode=reg_details');
-      await page.locator('#new_password').fill(nextPassword);
-      await page.locator('#password_confirm').fill(nextPassword);
-      await page.locator('#cur_password').fill(credential.password);
-      // Retain both candidates before any remote write for interrupted-test recovery.
-      save(journalPath,{accountId:secret.cipherId,oldPassword:credential.password,nextPassword,stage:'before-submit'});
-      await page.waitForTimeout(1500);
-      submitted=true;
-      await Promise.all([page.waitForNavigation(),page.locator('input[name="submit"]').click()]);
-      save(journalPath,{accountId:secret.cipherId,oldPassword:credential.password,nextPassword,stage:'submitted'});
+      // Save candidates before any action from the signed recipe can submit a form.
+      save(journalPath,{accountId:secret.cipherId,oldPassword:credential.password,nextPassword,stage:'before-recipe'});
+      for (const action of template.recipe.steps) {
+        if (action.action==='navigate') await page.goto(action.url);
+        else if (action.action==='fill-current-password') await page.locator(action.selector).fill(credential.password);
+        else if (['fill-new-password','fill-confirm-password'].includes(action.action)) await page.locator(action.selector).fill(nextPassword);
+        else if (action.action==='click') {
+          await page.waitForTimeout(1500);
+          submitted=true;
+          await Promise.all([page.waitForNavigation(),page.locator(action.selector).click()]);
+        } else if (action.action==='wait-for') await page.locator(action.selector).waitFor({timeout:action.timeoutMs??15000});
+        else if (action.action==='assert-text') {
+          const content=await page.locator(action.selector??'body').innerText();
+          if(!content.includes(action.value))throw new Error('Text assertion failed');
+        } else if (action.action==='assert-url' && page.url()!==action.url) throw new Error('URL assertion failed');
+      }
+      save(journalPath,{accountId:secret.cipherId,oldPassword:credential.password,nextPassword,stage:'recipe-completed'});
       await c.close();
       step='fresh-login-new-password';
       const fresh=await context();
@@ -102,7 +117,7 @@ async function main() {
   const events=new EventBus();
   const recoveryStore={async put(id,password){save(journalPath,{accountId:id,nextPassword:password,stage:'vault-update-failed'});}};
   const orchestrator=new RotationOrchestrator({vault,runner,events,recoveryStore});
-  const result=await orchestrator.rotate({accountId:secret.cipherId,passwordLength:24,template:{id:'phpbb-sit',version:'0.1.0',manifest:{allowedOrigins:[origin]}}});
+  const result=await orchestrator.rotate({accountId:secret.cipherId,passwordLength:24,template});
   if(result.status!=='succeeded') {
     save(resultPath,{...result,step,events:events.history().map(e=>({type:e.type,time:e.time}))});
     throw new Error('Rotation incomplete; inspect private recovery journal');
@@ -113,7 +128,7 @@ async function main() {
   let accepted;try{accepted=(await login(c,stored.username,stored.password)).accepted;}finally{await c.close();}
   if(!accepted)throw new Error('Vault credential login failed');
   fs.unlinkSync(journalPath);
-  save(resultPath,{...result,phpbb:'3.3.19',origin,newPasswordLogin:true,oldPasswordRejected:true,vaultReadbackLogin:true,completedAt:new Date().toISOString(),events:events.history().map(e=>({type:e.type,time:e.time}))});
+  save(resultPath,{...result,phpbb:'3.3.19',templateId:template.id,templateVersion:template.version,templateDigest:template.digest,origin,newPasswordLogin:true,oldPasswordRejected:true,vaultReadbackLogin:true,completedAt:new Date().toISOString(),events:events.history().map(e=>({type:e.type,time:e.time}))});
   console.log('phpbb-login-with-vault-readback=ok');
   console.log('orchestrator-rotation=succeeded');
 }

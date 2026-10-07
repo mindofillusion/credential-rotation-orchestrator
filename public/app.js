@@ -21,6 +21,8 @@ const elements = {
 };
 
 let eventHistory = [];
+let sitToken;
+let sitRunning=false;
 
 document.querySelector('#convert-codegen').addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -107,9 +109,44 @@ async function loadOverview() {
   elements.identityTitle.textContent = data.identity.keyId;
   elements.identityFingerprint.textContent = data.identity.fingerprint;
   renderTemplates(data.templates);
+  const enabled=Boolean(data.sit?.enabled);
+  sitToken=data.sitToken;
+  document.querySelector('#phpbb-sit-panel').hidden=!enabled;
+  document.querySelector('#simulation-panel').hidden=enabled;
+  if(enabled) {
+    document.querySelector('#notice-title').textContent='Environnement phpBB SIT';
+    document.querySelector('#notice-description').textContent='Les rotations modifient uniquement le compte du forum local de test et son entrée Vaultwarden SIT.';
+    document.querySelector('#notice-badge').textContent='Compte de test réel';
+    document.querySelector('#phpbb-account').textContent=data.sit.account ? `${data.sit.account.username} · ${data.sit.account.origin}` : 'Compte de test absent';
+    const select=document.querySelector('#phpbb-template');
+    const previous=select.value;
+    const templates=data.templates.filter(t=>t.origins.length===1 && t.origins[0]==='http://127.0.0.1:8224');
+    select.innerHTML=templates.map(t=>`<option value="${escapeHtml(JSON.stringify({id:t.id,version:t.version}))}">${escapeHtml(t.id)} · v${escapeHtml(t.version)}</option>`).join('');
+    if([...select.options].some(o=>o.value===previous))select.value=previous;
+    document.querySelector('#phpbb-run').disabled=sitRunning || data.sit.running || data.sit.recoveryPending || !data.sit.account || !templates.length;
+    if(data.sit.recoveryPending)document.querySelector('#phpbb-result').textContent='Récupération en attente : nouvelle rotation bloquée.';
+    else if(data.sit.running)document.querySelector('#phpbb-result').textContent='Rotation en cours…';
+    else if(data.sit.lastResult?.completedAt)document.querySelector('#phpbb-result').textContent=`Dernier résultat : ${data.sit.lastResult.status} · ${new Date(data.sit.lastResult.completedAt).toLocaleString('fr-FR')}`;
+  }
   eventHistory = data.events;
   renderEvents();
 }
+
+document.querySelector('#phpbb-run').addEventListener('click',async()=>{
+  const button=document.querySelector('#phpbb-run');
+  const output=document.querySelector('#phpbb-result');
+  sitRunning=true;button.disabled=true;output.textContent='Rotation et vérification en cours…';
+  try {
+    const result=await api('/api/sit/phpbb/run',{method:'POST',headers:{'content-type':'application/json','x-cro-sit-token':sitToken},body:document.querySelector('#phpbb-template').value});
+    output.textContent=result.status==='succeeded' ? 'Rotation réussie : nouveau mot de passe vérifié, ancien refusé, coffre mis à jour.' : `Rotation ${result.status}. ${result.recoveryPending?'Récupération nécessaire.':''}`;
+  } catch(error) {output.textContent=`Rotation refusée : ${error.message}`;}
+  finally {
+    sitRunning=false;
+    const message=output.textContent;
+    await loadOverview().catch(()=>{});
+    output.textContent=message;
+  }
+});
 
 for (const button of document.querySelectorAll('[data-view]')) {
   button.addEventListener('click', () => {

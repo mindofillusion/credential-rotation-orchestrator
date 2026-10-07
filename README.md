@@ -3,14 +3,14 @@
 Credential Rotation Orchestrator (CRO) is a local-first, vault-agnostic project for safely remediating compromised, weak, or reused credentials. It is designed to coordinate password changes on websites without sending credentials, browser sessions, or private history to a central service.
 
 > [!WARNING]
-> This repository is an early security prototype. Version `0.2.1` uses a simulated vault and simulated website runner. It must not be used with real credentials yet.
+> This repository is an early security prototype. The default mode uses a simulated vault and website runner. An explicit phpBB SIT mode now performs real rotations against a dedicated local test forum and Vaultwarden test account. Do not use production credentials.
 
 ## Current prototype
 
 The current milestone validates the parts that must fail safely and adds a local template workshop:
 
 - declarative templates with an explicit action allowlist;
-- exact HTTPS origin restrictions;
+- exact HTTPS origin restrictions by default; one fixed loopback HTTP origin is permitted only in explicitly enabled phpBB SIT mode;
 - SHA-256 integrity checks bound to a signed manifest;
 - Ed25519 signature verification;
 - transaction states for remote change, independent verification, and vault update;
@@ -23,7 +23,7 @@ The current milestone validates the parts that must fail safely and adds a local
 - explicit signer trust using an independently checked public-key fingerprint;
 - simulations for success, remote rejection, ambiguous verification, and vault synchronization failure.
 
-There is intentionally no real Vaultwarden adapter and no real Playwright runner in this release.
+The opt-in phpBB SIT integration uses Playwright and the restricted NAS Vaultwarden gateway. The standalone interface can execute a locally signed declarative phpBB template; this remains limited to the controlled test fixture. See [phpBB SIT setup and validation](sit/phpbb/README.md).
 
 ## Run locally
 

@@ -21,7 +21,8 @@ function validateDraft(input) {
 }
 
 export class TemplateService {
-  constructor({ identity, trustedKeys, repository, events }) {
+  constructor({ identity, trustedKeys, repository, events, verificationPolicy = {} }) {
+    this.verificationPolicy = verificationPolicy;
     this.identity = identity;
     this.trustedKeys = trustedKeys;
     this.repository = repository;
@@ -44,7 +45,7 @@ export class TemplateService {
       files: { 'recipe.json': digestRecipe(recipe) }
     };
     const bundle = { manifest, recipe, signature: this.identity.signManifest(manifest) };
-    const verified = verifyTemplateBundle(bundle, this.trustedKeys.keyMap());
+    const verified = verifyTemplateBundle(bundle, this.trustedKeys.keyMap(), new Date(), this.verificationPolicy);
     const summary = await this.repository.install(bundle, verified, 'local');
     this.events?.emit('template.installed', summary.id, { version: summary.version, trust: summary.trust });
     return { summary, bundleSha256: bundleDigest(bundle) };
@@ -56,7 +57,7 @@ export class TemplateService {
     }
     const actualSha256 = bundleDigest(bundle);
     if (actualSha256 !== expectedSha256) throw new Error('Bundle SHA-256 mismatch');
-    const verified = verifyTemplateBundle(bundle, this.trustedKeys.keyMap());
+    const verified = verifyTemplateBundle(bundle, this.trustedKeys.keyMap(), new Date(), this.verificationPolicy);
     const summary = await this.repository.install(bundle, verified, 'manual-import');
     this.events?.emit('template.installed', summary.id, { version: summary.version, trust: summary.trust });
     return { summary, bundleSha256: actualSha256 };

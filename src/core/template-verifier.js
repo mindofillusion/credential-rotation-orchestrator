@@ -57,7 +57,7 @@ function requireString(value, field) {
   }
 }
 
-function validateRecipe(recipe, manifest) {
+function validateRecipe(recipe, manifest, policy) {
   if (!recipe || recipe.schemaVersion !== 1 || !Array.isArray(recipe.steps)) {
     throw new TemplateVerificationError('invalid_recipe', 'Unsupported or incomplete recipe');
   }
@@ -76,7 +76,8 @@ function validateRecipe(recipe, manifest) {
     } catch {
       throw new TemplateVerificationError('invalid_origin', `Invalid origin: ${origin}`);
     }
-    if (parsed.protocol !== 'https:' || parsed.origin !== origin) {
+    const sitLoopback = policy.allowPhpbbSitLoopback === true && origin === 'http://127.0.0.1:8224';
+    if ((!sitLoopback && parsed.protocol !== 'https:') || parsed.origin !== origin) {
       throw new TemplateVerificationError('invalid_origin', `Origin must be an exact HTTPS origin: ${origin}`);
     }
   }
@@ -119,7 +120,7 @@ function validateRecipe(recipe, manifest) {
   }
 }
 
-export function verifyTemplateBundle(bundle, trustedKeys, now = new Date()) {
+export function verifyTemplateBundle(bundle, trustedKeys, now = new Date(), policy = {}) {
   if (!bundle || typeof bundle !== 'object') {
     throw new TemplateVerificationError('invalid_bundle', 'Bundle must be an object');
   }
@@ -188,7 +189,7 @@ export function verifyTemplateBundle(bundle, trustedKeys, now = new Date()) {
     throw new TemplateVerificationError('invalid_signature', 'Manifest signature is invalid');
   }
 
-  validateRecipe(recipe, manifest);
+  validateRecipe(recipe, manifest, policy);
   return {
     id: manifest.id,
     version: manifest.version,

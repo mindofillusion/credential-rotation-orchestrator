@@ -1,0 +1,13 @@
+{
+  "id": "org.phpbb.sit-password",
+  "version": "0.1.0",
+  "allowedOrigins": ["http://127.0.0.1:8224"],
+  "steps": [
+    {"action":"navigate","url":"http://127.0.0.1:8224/ucp.php?i=ucp_profile&mode=reg_details"},
+    {"action":"fill-new-password","selector":"#new_password"},
+    {"action":"fill-confirm-password","selector":"#password_confirm"},
+    {"action":"fill-current-password","selector":"#cur_password"},
+    {"action":"click","selector":"input[name=submit]"},
+    {"action":"assert-text","selector":"body","value":"Your profile has been updated."}
+  ]
+}

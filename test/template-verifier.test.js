@@ -84,3 +84,22 @@ test('applies the origin allowlist to URL assertions', () => {
     (error) => error instanceof TemplateVerificationError && error.code === 'origin_violation'
   );
 });
+
+function localFixture(origin) {
+  const {publicKey,privateKey}=generateKeyPairSync('ed25519');
+  const recipe={schemaVersion:1,steps:[{action:'navigate',url:origin+'/ucp.php'}]};
+  const manifest={schemaVersion:1,id:'org.phpbb.sit',version:'1.0.0',createdAt:'2026-10-07T00:00:00Z',expiresAt:'2027-10-07T00:00:00Z',allowedOrigins:[origin],permissions:['browser:navigate'],files:{'recipe.json':digestRecipe(recipe)}};
+  return {bundle:{manifest,recipe,signature:{algorithm:'ed25519',keyId:'sit-key',value:sign(null,Buffer.from(canonicalJson(manifest)),privateKey).toString('base64')}},keys:new Map([['sit-key',publicKey]])};
+}
+test('HTTP fixture requires explicit SIT policy and exactly the configured loopback port',()=>{
+  const now=new Date('2026-10-07T10:00:00Z');
+  const {bundle,keys}=localFixture('http://127.0.0.1:8224');
+  assert.throws(()=>verifyTemplateBundle(bundle,keys,now),{code:'invalid_origin'});
+  assert.equal(verifyTemplateBundle(bundle,keys,now,{allowPhpbbSitLoopback:true}).trust,'signed');
+  for(const origin of ['http://127.0.0.1:8223','http://localhost:8224','http://example.com']) {
+    const other=localFixture(origin);
+    assert.throws(()=>verifyTemplateBundle(other.bundle,other.keys,now,{allowPhpbbSitLoopback:true}),{code:'invalid_origin'});
+  }
+  bundle.recipe.steps[0].url='http://127.0.0.1:8224/altered';
+  assert.throws(()=>verifyTemplateBundle(bundle,keys,now,{allowPhpbbSitLoopback:true}),{code:'digest_mismatch'});
+});

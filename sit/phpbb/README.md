@@ -42,7 +42,11 @@ SHA384 de son installateur.
 
 ## Rejouer dans l'environnement préparé
 
-Définir ces variables, puis lancer `npm run test:sit:phpbb` depuis le dépôt :
+Définir les variables ci-dessous, activer `CRO_ENABLE_PHPBB_SIT=1`, puis lancer
+`npm start` depuis le dépôt avec un `CRO_DATA_DIR` privé et une écoute
+`CRO_HOST=127.0.0.1`. Utiliser le bouton **Renouveler le compte de test**.
+Le brouillon `template-draft.json` est signé avec l’identité locale lors du premier
+démarrage ; sa version installée reste immuable.
 
 | Variable | Valeur attendue |
 |---|---|
@@ -78,10 +82,11 @@ avant soumission, en conservant le jeton CSRF fourni par phpBB.
 
 ## Limites et récupération
 
-Ce test intègre le cœur de l'orchestrateur, un adaptateur de coffre SIT et un
-parcours Playwright codé explicitement. Il **ne valide pas encore** l'exécution
-d'un template importé/signé, l'interface graphique, le planificateur, les MFA,
-CAPTCHA, thèmes alternatifs ou une version différente de phpBB.
+Le mode interface intègre désormais le cœur de l'orchestrateur, un adaptateur
+de coffre SIT et un interpréteur des étapes du template signé. La connexion
+initiale et les vérifications finales restent spécifiques à phpBB et sont
+implémentées dans le runner. Le planificateur, les MFA, CAPTCHA, thèmes alternatifs
+et autres versions de phpBB ne sont pas encore validés.
 
 Les requêtes du contexte navigateur sont limitées à l'origine locale fixe et les
 service workers sont bloqués. Cela ne constitue pas une isolation réseau du
@@ -100,5 +105,45 @@ privé, fichiers 0600), mais restent en clair sur disque pour cette fixture. Ils
 sont ni affichés, ni inclus dans les traces Playwright, ni enregistrés dans Git.
 Ne jamais utiliser cette fixture avec des identifiants de production.
 
-Validation supplémentaire : les 21 tests unitaires du projet passent. Le test
+Validation supplémentaire : les 22 tests unitaires du projet passent. Le test
 réel est volontairement déclenché explicitement ; `npm test` ne contacte pas le NAS.
+
+
+## Interface et template signé — validation complémentaire
+
+Une troisième rotation réelle a été lancée par le bouton de l'interface sur SER5,
+avec le template `org.phpbb.sit-password` v0.1.0. Les étapes de changement sont
+lues dans le bundle signé ; elles ne sont plus dupliquées dans le runner. La
+signature, l'expiration, les empreintes et les origines sont revérifiées dans le
+serveur puis dans le processus d'exécution avant l'accès au coffre.
+
+Résultats confirmés :
+
+- rotation réussie, ancien secret refusé, connexion depuis le secret relu du coffre ;
+- template altéré rejeté à l'import, même avec un SHA global recalculé ;
+- requête provenant d'une autre origine refusée avec HTTP 403 ;
+- en-tête Host inattendu refusé avec HTTP 403 ;
+- second lancement refusé pendant une rotation active dans l'instance du serveur ;
+- résultat et événements visibles dans l'interface ; aucun secret envoyé au frontend.
+
+L'interface active sur SER5 écoute uniquement sur `127.0.0.1:18787`. Cette adresse
+s'utilise depuis SER5, pas directement depuis un autre poste. La publication
+réseau et le démarrage automatique de cette interface ne sont pas configurés.
+
+### Périmètre spécifique du mode SIT
+
+Le vérificateur conserve HTTPS obligatoire par défaut. La politique explicite
+`allowPhpbbSitLoopback`, activée uniquement par le mode serveur SIT, autorise
+exactement `http://127.0.0.1:8224` ; elle n'autorise ni un autre port ni une autre
+adresse HTTP. Le runner n'accepte qu'un manifeste contenant cette seule origine.
+Le serveur SIT refuse une écoute autre que `127.0.0.1`. Les POST de rotation
+exigent l'origine exacte de l'interface et un jeton propre au processus serveur.
+Ce mécanisme protège des requêtes web externes ; ce n'est pas une authentification
+multi-utilisateur contre un autre programme exécuté par le même compte système.
+
+`npm run test:sit:phpbb` reste un point d'entrée avancé, désormais avec une
+enveloppe JSON sur stdin (`bundle` et `trustedKeys`, liste de paires identifiant/clé
+publique PEM). Le serveur construit cette enveloppe à partir de son catalogue et
+de ses clés approuvées ; ne jamais remplacer ces clés par celles fournies par un
+bundle non approuvé. Les scripts autonomes antérieurs doivent être adaptés à ce
+nouveau contrôle avant exécution.

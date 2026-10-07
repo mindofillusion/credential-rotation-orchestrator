@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+import { PhpbbSitController } from './phpbb-sit.js';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
@@ -27,7 +29,14 @@ const dataDirectory = normalize(
   argumentValue('--data-dir') || process.env.CRO_DATA_DIR || join(root, '.cro-data')
 );
 
+const sitEnabled = process.env.CRO_ENABLE_PHPBB_SIT === '1';
+if (sitEnabled && (host !== '127.0.0.1' || !isAbsolute(process.env.CRO_PHPBB_SIT_DIR || '') || !isAbsolute(process.env.CRO_SIT_ACCESS_DIR || '') || !process.env.CRO_SIT_SSH_HOST)) {
+  throw new Error('SIT mode requires loopback binding and explicit fixture/vault configuration');
+}
+const verificationPolicy = { allowPhpbbSitLoopback: sitEnabled };
+const sitToken = randomBytes(32).toString('hex');
 const events = new EventBus();
+const sit = sitEnabled ? new PhpbbSitController({directory:process.env.CRO_PHPBB_SIT_DIR,sourceRoot:root,events}) : null;
 const vault = new MockVaultAdapter([
   {
     id: 'demo-account',
@@ -46,7 +55,7 @@ const trustedKeys = new TrustedKeyStore({ dataDirectory, localIdentity: identity
 await trustedKeys.initialize();
 const templateRepository = new TemplateRepository({ dataDirectory });
 await templateRepository.initialize();
-const templateService = new TemplateService({ identity, trustedKeys, repository: templateRepository, events });
+const templateService = new TemplateService({ identity, trustedKeys, repository: templateRepository, events, verificationPolicy });
 
 if ((await templateRepository.list()).length === 0) {
   await templateService.create({
@@ -64,10 +73,15 @@ if ((await templateRepository.list()).length === 0) {
   });
 }
 
+if (sitEnabled && !(await templateRepository.list()).some(t=>t.id==='org.phpbb.sit-password' && t.version==='0.1.0')) {
+  const draft=JSON.parse(await readFile(join(root,'sit/phpbb/template-draft.json'),'utf8'));
+  await templateService.create(draft);
+}
+
 async function simulationTemplate() {
   const selected = (await templateRepository.list())[0];
   const exported = await templateService.export(selected.id, selected.version);
-  return verifyTemplateBundle(exported.bundle, trustedKeys.keyMap());
+  return verifyTemplateBundle(exported.bundle, trustedKeys.keyMap(), new Date(), verificationPolicy);
 }
 
 function json(response, status, body) {
@@ -136,14 +150,18 @@ async function serveStatic(pathname, response) {
 }
 
 const server = createServer(async (request, response) => {
+  if (sitEnabled && request.headers.host !== `127.0.0.1:${port}`) return json(response,403,{error:'Host rejected'});
   const url = new URL(request.url, `http://${request.headers.host || `${host}:${port}`}`);
 
   if (request.method === 'GET' && url.pathname === '/api/overview') {
-    const accounts = await vault.listEntries();
+    const sitState = sit ? await sit.state() : null;
+    const accounts = sitState ? (sitState.account ? [sitState.account] : []) : await vault.listEntries();
     const templates = await templateRepository.list();
     return json(response, 200, {
-      mode: 'simulation',
-      vault: { adapter: 'mock', connected: true },
+      mode: sitEnabled ? 'phpBB SIT' : 'simulation',
+      vault: { adapter: sitEnabled ? 'Vaultwarden SIT' : 'mock', connected: sitEnabled ? Boolean(sitState?.lastResult?.vaultUpdated) : true },
+      sit: sitState,
+      sitToken: sitEnabled ? sitToken : undefined,
       identity: identity.publicIdentity(),
       templates,
       accounts,
@@ -181,6 +199,22 @@ const server = createServer(async (request, response) => {
     });
     request.on('close', unsubscribe);
     return;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/sit/phpbb/run') {
+    if (!sit) return json(response,404,{error:'SIT mode is disabled'});
+    if (request.headers.origin !== `http://127.0.0.1:${port}` || request.headers['x-cro-sit-token'] !== sitToken || !acceptsMutation(request)) {
+      return json(response,403,{error:'Same-origin SIT authorization required'});
+    }
+    try {
+      const body=await readJson(request);
+      if(Object.keys(body).some(k=>!['id','version'].includes(k)))throw new Error('Unexpected fields');
+      const exported=await templateService.export(body.id,body.version);
+      if(!exported) return json(response,404,{error:'Template not found'});
+      return json(response,200,await sit.run(exported.bundle,trustedKeys.keyMap()));
+    } catch(error) {
+      return json(response,400,{error:error.code ? `Template rejected: ${error.code}` : error.message});
+    }
   }
 
   if (request.method === 'POST' && url.pathname === '/api/simulations/run') {
@@ -251,6 +285,6 @@ const server = createServer(async (request, response) => {
 
 server.listen(port, host, () => {
   console.log(`Credential Rotation Orchestrator listening on http://${host}:${port}`);
-  console.log('Mode: simulation only; no real vault or website is accessed.');
+  console.log(sitEnabled ? 'Mode: real phpBB SIT rotations on the fixed local fixture.' : 'Mode: simulation only; no real vault or website is accessed.');
   console.log(`Local data: ${dataDirectory}`);
 });

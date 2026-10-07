@@ -28,9 +28,9 @@
     <section class="notice" aria-labelledby="notice-title" data-page="overview">
       <div>
         <strong id="notice-title">Environnement de simulation</strong>
-        <p>Aucun coffre ni site réel n’est contacté. Ce MVP valide la signature, les transitions et les alertes.</p>
+        <p id="notice-description">Aucun coffre ni site réel n’est contacté. Ce MVP valide la signature, les transitions et les alertes.</p>
       </div>
-      <span class="status safe">Sans secrets réels</span>
+      <span class="status safe" id="notice-badge">Sans secrets réels</span>
     </section>
 
     <section class="summary" aria-label="État du système" data-page="overview">
@@ -41,7 +41,17 @@
     </section>
 
     <div class="columns" data-page="overview">
-      <section class="panel" aria-labelledby="simulation-title">
+      <section class="panel" id="phpbb-sit-panel" aria-labelledby="phpbb-sit-title" hidden>
+        <p class="eyebrow">Forum de test</p>
+        <h2 id="phpbb-sit-title">Renouveler le mot de passe phpBB</h2>
+        <p id="phpbb-account"></p>
+        <label for="phpbb-template">Parcours signé</label>
+        <select id="phpbb-template"></select>
+        <p>Le nouveau mot de passe sera vérifié sur le forum avant la mise à jour du coffre.</p>
+        <button class="primary" id="phpbb-run" type="button">Renouveler le compte de test</button>
+        <output id="phpbb-result" aria-live="polite">En attente.</output>
+      </section>
+      <section class="panel" id="simulation-panel" aria-labelledby="simulation-title">
         <div class="panel-heading">
           <div>
             <p class="eyebrow">Moteur transactionnel</p>

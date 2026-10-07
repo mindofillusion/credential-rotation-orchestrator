@@ -33,7 +33,7 @@ réconciliation ; ne pas supprimer le fichier ni générer un autre mot de passe
 
 - Tâche de démarrage DSM : configuration et reprise après redémarrage non confirmées.
 - Compatibilité du compte avec les clients officiels Bitwarden non testée.
-- Un adaptateur SIT est maintenant exercé par le cœur de l'orchestrateur ; interface utilisateur non encore intégrée.
+- Un adaptateur SIT est maintenant exercé par le cœur de l'orchestrateur ; interface phpBB SIT désormais intégrée (voir validation phpBB).
 - Changement effectif sur phpBB, reconnexion et synchronisation du coffre :
   deux rotations réussies le 7 octobre, voir [validation phpBB](../phpbb/README.md).
 
