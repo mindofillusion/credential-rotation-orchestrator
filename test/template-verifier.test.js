@@ -1,0 +1,66 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { generateKeyPairSync, sign } from 'node:crypto';
+import { canonicalJson } from '../src/core/canonical-json.js';
+import { digestRecipe, verifyTemplateBundle, TemplateVerificationError } from '../src/core/template-verifier.js';
+
+function signedBundle(recipeOverride = {}) {
+  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+  const recipe = {
+    schemaVersion: 1,
+    steps: [{ action: 'navigate', url: 'https://example.com/account/password' }],
+    ...recipeOverride
+  };
+  const manifest = {
+    schemaVersion: 1,
+    id: 'org.example.password',
+    version: '1.0.0',
+    createdAt: '2026-10-07T00:00:00.000Z',
+    expiresAt: '2027-10-07T00:00:00.000Z',
+    allowedOrigins: ['https://example.com'],
+    permissions: ['browser:navigate'],
+    files: { 'recipe.json': digestRecipe(recipe) }
+  };
+  const signature = {
+    algorithm: 'ed25519',
+    keyId: 'test-key',
+    value: sign(null, Buffer.from(canonicalJson(manifest)), privateKey).toString('base64')
+  };
+  return { bundle: { manifest, recipe, signature }, keys: new Map([['test-key', publicKey]]) };
+}
+
+test('accepts a correctly signed declarative template', () => {
+  const { bundle, keys } = signedBundle();
+  const verified = verifyTemplateBundle(bundle, keys, new Date('2026-10-07T10:00:00Z'));
+  assert.equal(verified.trust, 'signed');
+  assert.equal(verified.id, 'org.example.password');
+});
+
+test('rejects a recipe modified after the manifest was signed', () => {
+  const { bundle, keys } = signedBundle();
+  bundle.recipe.steps.push({ action: 'click', selector: '#malicious-change' });
+  assert.throws(
+    () => verifyTemplateBundle(bundle, keys, new Date('2026-10-07T10:00:00Z')),
+    (error) => error instanceof TemplateVerificationError && error.code === 'digest_mismatch'
+  );
+});
+
+test('rejects navigation outside signed origins', () => {
+  const { bundle, keys } = signedBundle({
+    steps: [{ action: 'navigate', url: 'https://attacker.invalid/collect' }]
+  });
+  assert.throws(
+    () => verifyTemplateBundle(bundle, keys, new Date('2026-10-07T10:00:00Z')),
+    (error) => error instanceof TemplateVerificationError && error.code === 'origin_violation'
+  );
+});
+
+test('rejects executable code embedded in a recipe', () => {
+  const { bundle, keys } = signedBundle({
+    steps: [{ action: 'click', selector: '#submit', javascript: 'stealSecrets()' }]
+  });
+  assert.throws(
+    () => verifyTemplateBundle(bundle, keys, new Date('2026-10-07T10:00:00Z')),
+    (error) => error instanceof TemplateVerificationError && error.code === 'forbidden_code'
+  );
+});

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Credential Rotation Orchestrator</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">Local-first security</p>
+      <h1>Credential Rotation Orchestrator</h1>
+    </div>
+    <span class="mode" id="mode">Chargement…</span>
+  </header>
+
+  <nav aria-label="Navigation principale">
+    <button class="nav-item active" type="button">Vue d’ensemble</button>
+    <button class="nav-item" type="button" disabled>Sites</button>
+    <button class="nav-item" type="button" disabled>Identifiants</button>
+    <button class="nav-item" type="button" disabled>Templates</button>
+    <button class="nav-item" type="button" disabled>Intégrations</button>
+  </nav>
+
+  <main>
+    <section class="notice" aria-labelledby="notice-title">
+      <div>
+        <strong id="notice-title">Environnement de simulation</strong>
+        <p>Aucun coffre ni site réel n’est contacté. Ce MVP valide la signature, les transitions et les alertes.</p>
+      </div>
+      <span class="status safe">Sans secrets réels</span>
+    </section>
+
+    <section class="summary" aria-label="État du système">
+      <article><span>Coffre</span><strong id="vault-state">—</strong></article>
+      <article><span>Templates fiables</span><strong id="template-count">—</strong></article>
+      <article><span>Identifiants suivis</span><strong id="account-count">—</strong></article>
+      <article><span>État ambigu</span><strong id="ambiguous-count">—</strong></article>
+    </section>
+
+    <div class="columns">
+      <section class="panel" aria-labelledby="simulation-title">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Moteur transactionnel</p>
+            <h2 id="simulation-title">Tester une rotation</h2>
+          </div>
+        </div>
+        <label for="outcome">Résultat simulé</label>
+        <select id="outcome">
+          <option value="success">Succès complet</option>
+          <option value="failure">Refus du site</option>
+          <option value="ambiguous">Site modifié, vérification impossible</option>
+          <option value="vault-failure">Site modifié, coffre indisponible</option>
+        </select>
+        <button class="primary" id="run" type="button">Lancer la simulation</button>
+        <output id="result" aria-live="polite">En attente d’une simulation.</output>
+      </section>
+
+      <section class="panel" aria-labelledby="templates-title">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Chaîne de confiance</p>
+            <h2 id="templates-title">Templates installés</h2>
+          </div>
+        </div>
+        <div id="templates" class="list"></div>
+      </section>
+    </div>
+
+    <section class="panel" aria-labelledby="events-title">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">CloudEvents local</p>
+          <h2 id="events-title">Journal des événements</h2>
+        </div>
+        <span class="live">Temps réel</span>
+      </div>
+      <div id="events" class="events" aria-live="polite"></div>
+    </section>
+  </main>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

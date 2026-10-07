@@ -1,0 +1,17 @@
+{
+  "name": "credential-rotation-orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first credential remediation and password rotation orchestrator.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node src/server/main.js",
+    "start": "node src/server/main.js",
+    "test": "node --test",
+    "check": "node --check src/server/main.js && node --check public/app.js && npm test"
+  },
+  "license": "Apache-2.0"
+}
