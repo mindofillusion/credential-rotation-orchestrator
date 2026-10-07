@@ -27,7 +27,10 @@ CRO_SIT_SIGNUPS=false docker compose -f sit/compose.yaml up -d
 Le port est accessible uniquement sur l'hôte. Pour un hôte distant, utiliser
 un tunnel SSH local vers son port 8223 ; conserver l'accès navigateur via
 `http://localhost:8223` (contexte local sécurisé). Ne pas exposer ce port sur le LAN.
-Le réseau du conteneur est interne ; aucun serveur SMTP ni jeton admin n'est configuré.
+Le réseau du coffre est interne ; aucun serveur SMTP ni jeton admin n'est configuré.
+Une passerelle TCP à destination fixe expose uniquement le coffre sur la boucle
+locale. Elle relie le réseau interne à un réseau d'accès séparé, car Docker ne
+publie pas les ports d'un conteneur connecté uniquement à un réseau interne.
 
 ## Profil Bitwarden CLI distinct
 

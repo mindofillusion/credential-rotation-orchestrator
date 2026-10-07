@@ -27,7 +27,7 @@ jobs:
         run: |
           docker compose -f sit/compose.yaml ps -a
           docker compose -f sit/compose.yaml logs --tail 80
-          docker compose -f sit/compose.yaml port vaultwarden 80
+          docker compose -f sit/compose.yaml port gateway 8223
       - name: Remove ephemeral test vault
         if: always()
         run: docker compose -f sit/compose.yaml down --volumes
