@@ -1,4 +1,4 @@
-# Laboratoire — préversion de développement
+# Laboratoire — CRO 0.3.0
 
 Ce module ajoute un inventaire de plans multiversion et des attentes de validation persistantes à l'interface autonome. Il n'installe ni ne démarre les applications du catalogue. Il ne suspend/reprend pas encore le navigateur de rotation et ne met jamais à jour le coffre. Le catalogue contient des pistes à qualifier, pas une liste de distributions exécutables approuvées.
 
@@ -10,7 +10,7 @@ Pour observer un courriel de test, configurer explicitement `CRO_LAB_MAILPIT_URL
 
 Créer l'attente **avant** de déclencher manuellement l'envoi sur le site SIT. Le lecteur compare les métadonnées des nouveaux messages : expéditeur, destinataire, objet exact et fenêtre temporelle. Il exclut les identifiants présents à la création de l'attente. Un résultat unique est un **candidat à vérifier**, pas une preuve de validation ; un message ancien retardé peut satisfaire les mêmes critères. Plusieurs candidats produisent un état ambigu.
 
-Cliquer sur « Vérifier l'attente » pour actualiser son état : pas de scrutation automatique dans cette préversion. Une confirmation humaine produit elle aussi un état à vérifier. « Clôturer sans vérifier » ferme seulement l'observation locale : cette action n'annule rien sur le site et ne réconcilie pas le coffre.
+Cliquer sur « Vérifier l'attente » pour actualiser son état : pas de scrutation automatique dans cette version. Une confirmation humaine produit elle aussi un état à vérifier. « Clôturer sans vérifier » ferme seulement l'observation locale : cette action n'annule rien sur le site et ne réconcilie pas le coffre.
 
 ## Limites et protections
 
@@ -38,3 +38,5 @@ Le futur client de messagerie personnelle et les réponses automatiques configur
 ## Qualification ultérieure du banc isolé
 
 Le [runner courriel Keycloak](../sit/lab/EMAIL-BROWSER-QUALIFICATION.md) possède désormais une qualification navigateur réelle sur deux versions. Cette preuve ne change pas les capacités de l’interface installée : aucune reprise navigateur ni écriture du coffre n’est ajoutée à ses routes Laboratoire.
+
+Les derniers rapports navigateur locaux sont affichés dans le Laboratoire sous Windows. Seuls les champs de résultat autorisés sont lus : aucun secret, contenu de mail ou lien de validation n’est exposé. Un dernier échec remplace visuellement un ancien succès. Les rapports restent historiques, sans état vivant des conteneurs ni preuve d’écriture du coffre.

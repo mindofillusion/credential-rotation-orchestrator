@@ -37,7 +37,8 @@ const pairedDirectory=process.env.CRO_REMOTE_SIT_DIR;
 const pairedSit=await remoteSitConfig(pairedDirectory);
 const updateToken=randomBytes(32).toString('hex');
 const labToken=randomBytes(32).toString('hex');
-const lab=new LabService({dataDirectory,sourceRoot:root});
+const evidenceRoot=process.platform==='win32'&&process.env.LOCALAPPDATA?join(process.env.LOCALAPPDATA,'CRO-Catalogue-Lab'):undefined;
+const lab=new LabService({dataDirectory,sourceRoot:root,evidenceRoot});
 await lab.initialize();
 const updater=new UpdateManager({root:process.env.CRO_INSTALL_ROOT,version:appVersion,sourceRoot:root,port,host,dataDirectory});
 

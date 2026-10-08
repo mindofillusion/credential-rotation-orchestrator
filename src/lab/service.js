@@ -2,6 +2,7 @@ import {randomUUID, createHash} from 'node:crypto';
 import {join} from 'node:path';
 import {readFile} from 'node:fs/promises';
 import {readJsonFile,writeJsonAtomic} from '../storage/secure-json-store.js';
+import {readLabEvidence} from './evidence.js';
 import {MailpitReader} from './mailpit.js';
 const digest = value => createHash('sha256').update(value).digest('hex');
 const ACTIVE=new Set(['awaiting_email','awaiting_user','ready_to_verify','ambiguous']);
@@ -9,8 +10,8 @@ function text(value,max=160){if(typeof value!=='string'||!value.trim()||value.le
 function email(value){value=text(value,254).toLowerCase();if(!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(value))throw new Error('Adresse invalide');return value;}
 function exact(body,names){if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(k=>!names.includes(k)))throw new Error('Champs inattendus');}
 export class LabService {
-  constructor({dataDirectory,sourceRoot,mailpit,clock=()=>Date.now()}){
-    this.path=join(dataDirectory,'lab','state.json');this.sourceRoot=sourceRoot;this.clock=clock;
+  constructor({dataDirectory,sourceRoot,mailpit,evidenceRoot,clock=()=>Date.now()}){
+    this.path=join(dataDirectory,'lab','state.json');this.sourceRoot=sourceRoot;this.evidenceRoot=evidenceRoot;this.clock=clock;
     this.mailpit=mailpit||new MailpitReader(process.env.CRO_LAB_MAILPIT_URL);this.queue=Promise.resolve();
   }
   async initialize(){
@@ -25,7 +26,7 @@ export class LabService {
     applications:this.catalogue.applications.map(a=>({id:a.id,name:a.name,family:a.family,priority:a.priority,versions:a.versions.map(v=>({version:v.version,quarantine:v.quarantine,state:v.state})),installationStatus:a.installation_status,adoption:a.adoption_status})),
     instances:structuredClone(this.state.instances),checkpoints:this.state.checkpoints.map(c=>this.publicCheckpoint(c)),events:structuredClone(this.state.events),mailpit:await this.mailpit.status(),
     capabilities:{plan:true,observeEmail:true,install:false,start:false,rotate:false},
-    scope:'local-lab-planning-and-email-observation'};}
+    evidence:await readLabEvidence(this.evidenceRoot),scope:'local-lab-planning-and-email-observation'};}
   async createInstance(body){return this.transact(async()=>{
     exact(body,['product','version']);const a=this.catalogue.applications.find(a=>a.id===body.product);const v=a?.versions.find(v=>v.version===body.version);
     if(!a||!v)throw new Error('Version absente du catalogue');

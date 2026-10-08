@@ -180,15 +180,18 @@
         <div id="workshop-templates" class="list"></div>
       </section>
     </section>
-    <section class="panel" data-page="lab" hidden>
+    <section class="panel" id="lab-page" data-page="lab" hidden>
       <p class="eyebrow">Préparation et observation locale</p><h2>Laboratoire multiversion</h2>
       <p>Préparez les versions à tester dans un inventaire persistant. Ajouter un plan ne déploie aucun logiciel. Les qualifications historiques du catalogue ne qualifient pas vos instances.</p>
       <form id="lab-plan" class="form-stack">
         <label for="lab-product">Application</label><select id="lab-product" required></select>
         <label for="lab-version">Version</label><select id="lab-version" required></select>
-        <button type="submit">Ajouter au plan de tests</button>
+        <button class="primary" type="submit">Ajouter au plan de tests</button>
       </form>
       <div id="lab-instances" class="list"></div>
+      <h2>Derniers essais navigateur du banc local</h2>
+      <p>Ces rapports décrivent des essais passés. Ils ne prouvent ni que les instances tournent actuellement, ni que le coffre a été mis à jour.</p>
+      <div id="lab-evidence" class="list"></div>
       <h2>Attentes de validation par courriel</h2>
       <p id="lab-mail-status"></p>
       <p>Créez une attente avant de déclencher vous-même l'envoi sur le site SIT. Un message candidat ou une confirmation humaine laisse la rotation non vérifiée. Aucun lien n'est ouvert et aucun message n'est envoyé par ce module.</p>
@@ -201,7 +204,7 @@
           <label for="lab-subject">Objet exact attendu</label><input id="lab-subject" maxlength="200" autocomplete="off">
         </div>
         <label for="lab-timeout">Délai en minutes</label><input id="lab-timeout" type="number" min="1" max="60" value="15" required>
-        <button type="submit">Créer l'attente</button>
+        <button class="primary" type="submit">Créer l'attente</button>
       </form>
       <output id="lab-feedback" aria-live="polite"></output>
       <div id="lab-checkpoints" class="list"></div>

@@ -77,3 +77,9 @@ output { display: block; min-height: 42px; margin-top: 12px; padding: 10px; bord
   .notice { align-items: start; flex-direction: column; }
   .workshop-grid, .identity-card, .form-row { grid-template-columns: 1fr; }
 }
+
+#lab-page > h2:not(:first-of-type) { margin-top: 28px; }
+#lab-page > p { margin: 8px 0 14px; line-height: 1.5; }
+#lab-page .list { margin-top: 16px; }
+#lab-instances p, #lab-evidence p, #lab-checkpoints article { padding: 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); line-height: 1.5; }
+#lab-checkpoints article p + p { margin-top: 8px; color: var(--muted); }

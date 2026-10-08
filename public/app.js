@@ -102,7 +102,7 @@ function renderTemplates(templates) {
 
 async function loadOverview() {
   const data = await api('/api/overview');
-  document.querySelector('#app-version').textContent=data.application?.version ? `· v${data.application.version}` : '';
+
   elements.mode.textContent = data.mode === 'simulation' ? 'Simulation' : data.mode;
   elements.vault.textContent = data.vault.connected ? `${data.vault.adapter} connecté` : 'déconnecté';
   elements.templateCount.textContent = String(data.templates.length);
@@ -279,6 +279,7 @@ let updateSession;
 let checkedPatch;
 async function updateStatus(){
  updateSession=await api('/api/updates/status');
+ document.querySelector('#app-version').textContent=`· v${updateSession.version}`;
  document.querySelector('#patch-status').textContent=updateSession.enabled?`CRO ${updateSession.version}. ${updateSession.last?'Dernière installation : '+updateSession.last.status:''}`:'Cette installation ne possède pas encore de lanceur de mise à jour.';
  document.querySelector('#patch-check').disabled=!updateSession.enabled;
 }

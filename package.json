@@ -1,6 +1,6 @@
 {
   "name": "credential-rotation-orchestrator",
-  "version": "0.3.0-dev.1",
+  "version": "0.3.0",
   "private": true,
   "description": "Local-first credential remediation and password rotation orchestrator.",
   "type": "module",

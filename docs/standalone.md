@@ -9,7 +9,7 @@ La livraison `SER5_Update_0.5.9.199_to_0.5.9.200_CRO-CMS-SIT.ser5upd` proposée 
 Prérequis : Node.js 22 ou supérieur avec npm. Aucun module npm tiers n'est requis pour l'interface, les signatures et les simulations.
 
 ```sh
-npm install --global --ignore-scripts ./credential-rotation-orchestrator-0.2.3.tgz
+npm install --global --ignore-scripts ./credential-rotation-orchestrator-0.3.0.tgz
 cro
 ```
 

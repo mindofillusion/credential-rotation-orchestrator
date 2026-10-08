@@ -1,4 +1,17 @@
-# Mises à jour CRO et raccordement SIT
+# Mises à jour CRO
+
+## Livraison 0.3.0 — source exacte 0.2.6
+
+- Onglet Laboratoire autonome : catalogue multiversion, plans persistants, attentes courriel/manuelles et clôture sans fausse validation.
+- Affichage des derniers rapports navigateur du banc Windows, avec mention explicite du coffre non raccordé.
+- Santé locale : `paired-sit` lorsque le raccordement est configuré ; ce statut décrit le mode, pas la disponibilité du coffre.
+- Routes Laboratoire locales protégées par Host, Origin et jeton de session ; aucune extension des droits du relais SER5/NAS.
+
+Le paquet est complet et signé au format `.cropatch`. Il accepte uniquement 0.2.6, déploie une nouvelle arborescence et conserve la version précédente. Les clés de confiance, l'appairage et les données utilisateur restent hors du paquet. Une panne de démarrage déclenche le retour à 0.2.6. Aucun conteneur n'est installé/démarré et aucun parcours de rotation n'est lancé par cette mise à jour.
+
+Installation : interface `http://127.0.0.1:8787/` → Mises à jour CRO → sélectionner le `.cropatch` → Vérifier → Installer. Après redémarrage, contrôler la version 0.3.0 et l'onglet Laboratoire. Les nouvelles routes sont indépendantes de l'accessibilité du banc distant.
+
+Limites : l'interface ne pilote pas encore les conteneurs, le lecteur Mailpit nécessite une configuration explicite non ajoutée au lanceur distribué, et la reprise navigateur transactionnelle avec écriture/relecture Vaultwarden reste à intégrer. Les tests du parcours Keycloak sont des qualifications séparées du banc local, pas une nouvelle capacité de rotation dans l'interface.
 
 ## Livraison 0.2.6
 
