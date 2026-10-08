@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "org.keycloak.sit-email-reset",
+  "version": "0.1.0",
+  "status": "sit-qualified-not-importable-as-signed-template",
+  "compatibleVersions": ["26.8.0", "26.7.5"],
+  "mailpitVersions": ["1.31.4", "1.30.7"],
+  "origins": ["http://127.0.0.1:18251", "http://127.0.0.1:18261"],
+  "realmPattern": "^cro-sit-[a-f0-9]{12}$",
+  "mail": {
+    "sender": "validation@example.invalid",
+    "recipient": "unique-generated-test-account",
+    "correlation": ["exact-recipient", "exact-sender", "after-fixture-start", "single-message"],
+    "linkPath": "/realms/{realm}/login-actions/action-token",
+    "linkPolicy": "exact-origin-and-realm-no-userinfo-no-fragment-no-duplicate-parameters"
+  },
+  "selectors": {
+    "form": "#kc-passwd-update-form",
+    "newPassword": "#password-new",
+    "confirmation": "#password-confirm",
+    "submit": "#kc-passwd-update-form button[type=submit]",
+    "loginUser": "#username",
+    "loginPassword": "#password",
+    "loginSubmit": "#kc-login",
+    "loginError": "#input-error-username",
+    "invalidAction": "#kc-error-message"
+  },
+  "verification": ["fresh-browser-auth-code-pkce", "old-password-rejected", "consumed-link-rejected", "expired-link-rejected", "new-password-still-accepted-after-expiry-test"],
+  "unqualified": ["vault-update-and-readback", "human-session-handoff", "crash-resume", "captcha", "external-identity-brokering", "signed-template-import"]
+}

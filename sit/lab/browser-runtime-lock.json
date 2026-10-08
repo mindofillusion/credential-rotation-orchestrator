@@ -1,0 +1,9 @@
+{
+  "platform": "win32-x64",
+  "nodeObserved": "26.3.0",
+  "playwright": {"version": "1.64.0", "integrity": "sha512-kVzTnYFYEyQ9RGzBjNCd2+yEqWmVbxl3AHPynv3qQ6JTjv4a+kwRcnqQwIpuP3NnrnIrE/Q6wWAIAvMfIE2/Yg=="},
+  "playwright-core": {"version": "1.64.0", "integrity": "sha512-T9r+MZkTECl2+oUcZ26YgZzTrYidTsIhYYkJix+6iDOymOb1FB2RLLSOxRGnZGv5DStt+aduIVbt+E8WygXYpg=="},
+  "chromiumHeadlessShell": {"version": "156.0.8078.4", "playwrightRevision": "1248"},
+  "provenance": "npm package-lock installed on the test host; browser version returned by the launched browser",
+  "scope": "dedicated private runtime; no modification of the user's normal browser profile"
+}

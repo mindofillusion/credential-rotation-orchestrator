@@ -57,3 +57,7 @@ Ne jamais remplacer le tag ou le digest d'une instance qualifiée. Ajouter la no
 - https://mailpit.axllent.org/docs/configuration/runtime-options/
 - https://mailpit.axllent.org/docs/api-v1/
 - https://docs.docker.com/desktop/features/networking/networking-how-tos/
+
+## Lot suivant : parcours navigateur courriel
+
+Le [rapport navigateur](EMAIL-BROWSER-QUALIFICATION.md) complète cette première qualification SMTP avec le changement de mot de passe, une connexion OIDC/PKCE neuve, le refus de l’ancien secret et des liens consommés ou expirés. Le coffre reste non raccordé à ce nouveau runner.

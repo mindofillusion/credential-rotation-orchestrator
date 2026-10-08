@@ -34,3 +34,7 @@ Cliquer sur « Vérifier l'attente » pour actualiser son état : pas de scrutat
 5. Livrer le paquet signé et qualifier son installation/retour arrière sur Windows.
 
 Le futur client de messagerie personnelle et les réponses automatiques configurables sont consignés dans la [feuille de route](roadmap.md). Ils constituent une intégration distincte.
+
+## Qualification ultérieure du banc isolé
+
+Le [runner courriel Keycloak](../sit/lab/EMAIL-BROWSER-QUALIFICATION.md) possède désormais une qualification navigateur réelle sur deux versions. Cette preuve ne change pas les capacités de l’interface installée : aucune reprise navigateur ni écriture du coffre n’est ajoutée à ses routes Laboratoire.

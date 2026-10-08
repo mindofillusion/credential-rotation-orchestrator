@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "scope": "Keycloak email action + browser password change + fresh OIDC PKCE login; no vault",
+  "testHost": "Windows / Docker Desktop Linux engine",
+  "browser": "Chromium Headless Shell 156.0.8078.4",
+  "playwright": "1.64.0",
+  "pairs": [
+    {
+      "id": "current",
+      "keycloak": "26.8.0",
+      "mailpit": "1.31.4",
+      "startedAt": "2026-10-08T12:09:24.593Z",
+      "completedAt": "2026-10-08T12:09:43.474Z"
+    },
+    {
+      "id": "previous",
+      "keycloak": "26.7.5",
+      "mailpit": "1.30.7",
+      "startedAt": "2026-10-08T12:09:49.307Z",
+      "completedAt": "2026-10-08T12:10:06.419Z"
+    }
+  ],
+  "checks": {
+    "exactMailLinkOriginAndRealm": true,
+    "browserPasswordChange": true,
+    "newPasswordFreshBrowserLogin": true,
+    "pkceCodeExchangeHttp200": true,
+    "oldPasswordBrowserRejection": true,
+    "consumedLinkRejected": true,
+    "expiredLinkRejected": true,
+    "newPasswordRetainedAfterExpiry": true,
+    "privateRecoveryJournalAtomicFinalWrite": true
+  },
+  "notQualified": [
+    "vault-write-and-readback",
+    "human-handoff",
+    "crash-resume",
+    "captcha",
+    "external-idp-federation",
+    "signed-template-import"
+  ],
+  "finalContainers": "stopped",
+  "nodeTestsPassed": 38,
+  "sourceSha256": {
+    "sit/lab/email-browser.mjs": "cef19ca9fdebd26d86a99dec6048549efd68732051b03191ed0d15d9f6b6e0a0",
+    "src/interventions/keycloak-mail-link.js": "8a2edb8c331890f2fd8275d9640963a6a6455d2761ba1bf2d2c7f24c8168f90d",
+    "src/lab/mailpit.js": "0599ac825f58c7b1c4564741de3f365c6b0e1332efc5103d633706a4a611a0c4",
+    "src/storage/secure-json-store.js": "0cd07d7fe529f0029f2663a7711a6ced534834aacc6942d716c29e58ae97794e"
+  }
+}
