@@ -319,3 +319,7 @@ Les changements de support/diffusion et les nouveaux tags alimentent une revue; 
 - **Matomo** : Échantillon du flux: branches distinctes, sinon patch ancien. Diffusion non établie. Moins de deux versions sélectionnées; résolution complémentaire nécessaire.
 - **Apache Superset** : Le flux récent ne contient que des charts Helm. Une version de chart ne vaut pas version applicative. Moins de deux versions sélectionnées; résolution complémentaire nécessaire.
 - **WireMock** : Échantillon du flux: branches distinctes, sinon patch ancien. Diffusion non établie. Moins de deux versions sélectionnées; résolution complémentaire nécessaire.
+
+## Installations postérieures à cet inventaire
+
+Le [lot courriel/identité](../lab/README.md) documente quatre installations Windows du 8 octobre 2026. Le présent catalogue reste le relevé initial : ses badges historiques et ses gates ne sont pas remplacés par une simple preuve de démarrage ou de réception de mail.

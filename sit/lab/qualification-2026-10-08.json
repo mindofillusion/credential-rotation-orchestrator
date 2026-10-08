@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-08T11:52:02.846Z",
+  "environment": "Windows Docker Desktop / Linux engine 29.7.2",
+  "project": "cro-catalogue-lab",
+  "finalState": "stopped",
+  "scope": "identity-login-and-smtp-capture-not-password-rotation",
+  "pairs": [
+    {
+      "id": "current",
+      "mailpit": "1.31.4",
+      "keycloak": "26.8.0",
+      "qualificationCompletedAt": "2026-10-08T11:50:14.730Z",
+      "persistenceCheckedAt": "2026-10-08T11:51:46.002Z"
+    },
+    {
+      "id": "previous",
+      "mailpit": "1.30.7",
+      "keycloak": "26.7.5",
+      "qualificationCompletedAt": "2026-10-08T11:50:54.868Z",
+      "persistenceCheckedAt": "2026-10-08T11:52:02.846Z"
+    }
+  ],
+  "checks": {
+    "oidcDiscovery": true,
+    "bootstrapLogin": true,
+    "testAccountLogin": true,
+    "smtpCapture": true,
+    "croMailpitReader": true,
+    "realmRetainedAfterRestart": true,
+    "mailRetainedAfterRestart": true,
+    "browserSso": false,
+    "passwordResetLinkConsumed": false,
+    "passwordRotation": false,
+    "vaultReadback": false,
+    "captcha": false
+  },
+  "diagnostics": [
+    {
+      "issue": "Direct publication on internal-only network unavailable",
+      "resolution": "Fixed-destination gateway with distinct access network",
+      "resolved": true
+    },
+    {
+      "issue": "Requested user ID not retained by Keycloak; execute-actions-email returned 404",
+      "resolution": "Use created user Location header",
+      "resolved": true
+    },
+    {
+      "issue": "Node PID 1 did not terminate on SIGTERM; Docker killed gateway with exit 137, OOM false",
+      "resolution": "Explicit bounded SIGTERM/SIGINT handler",
+      "resolved": true
+    }
+  ]
+}

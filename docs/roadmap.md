@@ -86,3 +86,5 @@ Distinguer les codes à saisir, les liens à ouvrir et les validations exigeant 
 Étudier OAuth et les permissions minimales, les filtres côté serveur lorsque disponibles, la conservation limitée des métadonnées, la protection des jetons et l'absence de secrets dans les alertes. Certains fournisseurs accordent une permission de lecture plus large que le filtre applicatif : l'interface devra expliquer cette différence. Une validation par mail ne prouve jamais à elle seule le changement du mot de passe : vérifier ensuite une nouvelle connexion et la relecture du coffre.
 
 Cette piste est documentée, pas implémentée. Le lecteur Mailpit SIT en développement est limité à l'observation locale : aucun envoi, aucune réponse automatique et aucun accès à une messagerie personnelle.
+
+Plan hybride retenu le 8 octobre 2026 : [gestionnaire d’interventions](interventions.md). Les installations du catalogue sont organisées en lots isolés et qualifiés, sans modification des instances de production.

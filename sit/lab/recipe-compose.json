@@ -1,0 +1,274 @@
+{
+  "services": {
+    "mail-current": {
+      "restart": "no",
+      "networks": [
+        "current"
+      ],
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "pids_limit": 128,
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "2m",
+          "max-file": "2"
+        }
+      },
+      "image": "axllent/mailpit@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48",
+      "labels": {
+        "org.cro.product": "mailpit",
+        "org.cro.version": "1.31.4"
+      },
+      "mem_limit": "192m",
+      "cpus": 0.5,
+      "read_only": true,
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=32m"
+      ],
+      "volumes": [
+        "mail-current:/data"
+      ],
+      "environment": {
+        "MP_DATABASE": "/data/mailpit.db",
+        "MP_DISABLE_VERSION_CHECK": "true",
+        "MP_SMTP_DISABLE_RDNS": "true",
+        "MP_SMTP_ALLOWED_RECIPIENTS": "@example\\.invalid$",
+        "MP_MAX_MESSAGES": "100",
+        "MP_MAX_MESSAGE_SIZE": "1"
+      }
+    },
+    "identity-current": {
+      "restart": "no",
+      "networks": [
+        "current"
+      ],
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "pids_limit": 256,
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "2m",
+          "max-file": "2"
+        }
+      },
+      "image": "quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+      "labels": {
+        "org.cro.product": "keycloak",
+        "org.cro.version": "26.8.0"
+      },
+      "mem_limit": "1024m",
+      "cpus": 1.0,
+      "volumes": [
+        "identity-current:/opt/keycloak/data"
+      ],
+      "environment": {
+        "KC_BOOTSTRAP_ADMIN_USERNAME": "cro-bootstrap",
+        "KC_BOOTSTRAP_ADMIN_PASSWORD": "${CRO_LAB_KC_CURRENT_PASSWORD:?required}",
+        "JAVA_OPTS_KC_HEAP": "-Xms128m -Xmx512m"
+      },
+      "command": [
+        "start-dev"
+      ],
+      "depends_on": [
+        "mail-current"
+      ]
+    },
+    "mail-previous": {
+      "restart": "no",
+      "networks": [
+        "previous"
+      ],
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "pids_limit": 128,
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "2m",
+          "max-file": "2"
+        }
+      },
+      "image": "axllent/mailpit@sha256:d5ecbb067db3705fa953d79e1b7f81ef84038df67aba6c52825d8c02a1ea748a",
+      "labels": {
+        "org.cro.product": "mailpit",
+        "org.cro.version": "1.30.7"
+      },
+      "mem_limit": "192m",
+      "cpus": 0.5,
+      "read_only": true,
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=32m"
+      ],
+      "volumes": [
+        "mail-previous:/data"
+      ],
+      "environment": {
+        "MP_DATABASE": "/data/mailpit.db",
+        "MP_DISABLE_VERSION_CHECK": "true",
+        "MP_SMTP_DISABLE_RDNS": "true",
+        "MP_SMTP_ALLOWED_RECIPIENTS": "@example\\.invalid$",
+        "MP_MAX_MESSAGES": "100",
+        "MP_MAX_MESSAGE_SIZE": "1"
+      }
+    },
+    "identity-previous": {
+      "restart": "no",
+      "networks": [
+        "previous"
+      ],
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "pids_limit": 256,
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "2m",
+          "max-file": "2"
+        }
+      },
+      "image": "quay.io/keycloak/keycloak@sha256:37dbaf6f0722c9ec246335f36e1ef8b2e6cb960f7c27e0d8c615121a3d475a85",
+      "labels": {
+        "org.cro.product": "keycloak",
+        "org.cro.version": "26.7.5"
+      },
+      "mem_limit": "1024m",
+      "cpus": 1.0,
+      "volumes": [
+        "identity-previous:/opt/keycloak/data"
+      ],
+      "environment": {
+        "KC_BOOTSTRAP_ADMIN_USERNAME": "cro-bootstrap",
+        "KC_BOOTSTRAP_ADMIN_PASSWORD": "${CRO_LAB_KC_PREVIOUS_PASSWORD:?required}",
+        "JAVA_OPTS_KC_HEAP": "-Xms128m -Xmx512m"
+      },
+      "command": [
+        "start-dev"
+      ],
+      "depends_on": [
+        "mail-previous"
+      ]
+    },
+    "gateway-current": {
+      "image": "node@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+      "restart": "no",
+      "user": "node",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "networks": [
+        "current",
+        "access-current"
+      ],
+      "ports": [
+        "127.0.0.1:18250:8025",
+        "127.0.0.1:18251:8080"
+      ],
+      "mem_limit": "64m",
+      "cpus": 0.25,
+      "pids_limit": 32,
+      "volumes": [
+        "./gateway.mjs:/app/gateway.mjs:ro"
+      ],
+      "command": [
+        "node",
+        "/app/gateway.mjs"
+      ],
+      "environment": {
+        "CRO_LAB_PAIR": "current"
+      },
+      "depends_on": [
+        "mail-current",
+        "identity-current"
+      ],
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "2m",
+          "max-file": "2"
+        }
+      }
+    },
+    "gateway-previous": {
+      "image": "node@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1",
+      "restart": "no",
+      "user": "node",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "networks": [
+        "previous",
+        "access-previous"
+      ],
+      "ports": [
+        "127.0.0.1:18260:8025",
+        "127.0.0.1:18261:8080"
+      ],
+      "mem_limit": "64m",
+      "cpus": 0.25,
+      "pids_limit": 32,
+      "volumes": [
+        "./gateway.mjs:/app/gateway.mjs:ro"
+      ],
+      "command": [
+        "node",
+        "/app/gateway.mjs"
+      ],
+      "environment": {
+        "CRO_LAB_PAIR": "previous"
+      },
+      "depends_on": [
+        "mail-previous",
+        "identity-previous"
+      ],
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "2m",
+          "max-file": "2"
+        }
+      }
+    }
+  },
+  "networks": {
+    "current": {
+      "internal": true
+    },
+    "previous": {
+      "internal": true
+    },
+    "access-current": {},
+    "access-previous": {}
+  },
+  "volumes": {
+    "mail-current": {},
+    "identity-current": {},
+    "mail-previous": {},
+    "identity-previous": {}
+  }
+}

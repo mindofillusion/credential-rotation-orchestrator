@@ -70,6 +70,8 @@ Read:
 - [Event contract](docs/events.md)
 - [Roadmap](docs/roadmap.md)
 - [Laboratoire : préversion et limites](docs/laboratory.md)
+- [Premier lot installé : Mailpit et Keycloak multiversion](sit/lab/README.md)
+- [Plan des interventions courriel, SSO et CAPTCHA](docs/interventions.md)
 - [Catalogue SIT multiversion et mesures de diffusion](sit/catalogue/README.md)
 - [Security policy](SECURITY.md)
 - [Local storage and identity](docs/local-security.md)
