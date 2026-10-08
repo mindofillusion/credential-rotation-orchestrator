@@ -2,6 +2,7 @@ export class MemoryRecoveryStore {
   #values = new Map();
 
   async put(accountId, password) {
+    if (this.#values.has(accountId)) throw new Error('Recovery already pending');
     this.#values.set(accountId, password);
   }
 

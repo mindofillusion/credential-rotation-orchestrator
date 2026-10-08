@@ -1,6 +1,8 @@
 import { generatePassword } from './password-generator.js';
 
 export class RotationOrchestrator {
+  #active = new Set();
+
   constructor({ vault, runner, events, recoveryStore }) {
     this.vault = vault;
     this.runner = runner;
@@ -9,50 +11,54 @@ export class RotationOrchestrator {
   }
 
   async rotate({ accountId, template, passwordLength = 24 }) {
+    if (this.#active.has(accountId)) return {status:'blocked', reason:'rotation_in_progress'};
+    this.#active.add(accountId);
     const subject = `account/${accountId}`;
-    this.events.emit('credential.rotation.started', subject, {
-      site: template.manifest.allowedOrigins[0],
-      template: template.id,
-      templateVersion: template.version
-    });
-
-    const credential = await this.vault.getCredential(accountId);
-    const nextPassword = generatePassword(passwordLength);
+    let site;
+    let enteredRunner = false;
     let remoteChanged = false;
-
+    let reason = 'prepare_failed';
     try {
-      const change = await this.runner.execute({ template, credential, nextPassword });
-      remoteChanged = change.remoteChanged === true;
-      if (!remoteChanged || change.verified !== true) {
-        throw new Error('Remote change could not be verified in a fresh session');
+      site = template.manifest.allowedOrigins[0];
+      if (await this.recoveryStore.has?.(accountId)) {
+        return {status:'blocked', reason:'recovery_pending'};
       }
-
-      try {
-        await this.vault.updateCredential(accountId, nextPassword);
-      } catch (error) {
-        await this.recoveryStore.put(accountId, nextPassword);
-        this.events.emit('credential.rotation.state_ambiguous', subject, {
-          site: template.manifest.allowedOrigins[0],
-          reason: 'vault_update_failed',
-          message: error.message
-        });
-        return { status: 'ambiguous', remoteChanged: true, vaultUpdated: false };
+      this.events.emit('credential.rotation.started', subject, {
+        site, template:template.id, templateVersion:template.version
+      });
+      const credential = await this.vault.getCredential(accountId);
+      const nextPassword = generatePassword(passwordLength);
+      // Fail closed: persist the candidate before a browser can submit it.
+      // Real runners must supply a durable private store; memory is simulation only.
+      await this.recoveryStore.put(accountId, nextPassword);
+      enteredRunner = true;
+      remoteChanged = null; // A thrown runner cannot prove that submission did not occur.
+      reason = 'remote_outcome_unknown';
+      const change = await this.runner.execute({template, credential, nextPassword});
+      remoteChanged = change.remoteChanged === true ? true : change.remoteChanged === false ? false : null;
+      if (remoteChanged !== true || change.verified !== true) {
+        reason = remoteChanged === false ? 'remote_change_rejected' : 'remote_verification_failed';
+        if (remoteChanged === false) await this.recoveryStore.clear?.(accountId);
+        throw new Error('Unverified remote change');
       }
-
-      this.events.emit('credential.rotation.succeeded', subject, {
-        site: template.manifest.allowedOrigins[0],
-        template: template.id
-      });
-      return { status: 'succeeded', remoteChanged: true, vaultUpdated: true };
-    } catch (error) {
-      const type = remoteChanged
-        ? 'credential.rotation.state_ambiguous'
-        : 'credential.rotation.failed';
-      this.events.emit(type, subject, {
-        site: template.manifest.allowedOrigins[0],
-        message: error.message
-      });
-      return { status: remoteChanged ? 'ambiguous' : 'failed', remoteChanged, vaultUpdated: false };
+      reason = 'vault_update_failed';
+      await this.vault.updateCredential(accountId, nextPassword);
+      reason = 'vault_readback_failed';
+      const stored = await this.vault.getCredential(accountId);
+      if (stored.password !== nextPassword || stored.username !== credential.username) {
+        throw new Error('Vault readback mismatch');
+      }
+      reason = 'recovery_cleanup_failed';
+      await this.recoveryStore.clear?.(accountId);
+      this.events.emit('credential.rotation.succeeded', subject, {site, template:template.id});
+      return {status:'succeeded', remoteChanged:true, vaultUpdated:true};
+    } catch {
+      const ambiguous = enteredRunner && remoteChanged !== false;
+      // Adapter/browser exception messages can contain credentials or URLs.
+      this.events.emit(ambiguous ? 'credential.rotation.state_ambiguous' : 'credential.rotation.failed', subject, {site, reason});
+      return {status:ambiguous ? 'ambiguous' : 'failed', remoteChanged, vaultUpdated:false};
+    } finally {
+      this.#active.delete(accountId);
     }
   }
 }

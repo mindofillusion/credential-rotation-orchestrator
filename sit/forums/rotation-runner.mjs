@@ -136,7 +136,7 @@ async function main() {
     } finally {await c.close();}
   }};
   const events=new EventBus();
-  const recoveryStore={async put(id,password){save(journalPath,{accountId:id,nextPassword:password,stage:'vault-update-failed'});}};
+  const recoveryStore={async put(id,password){fs.writeFileSync(journalPath,JSON.stringify({accountId:id,nextPassword:password,stage:'prepared-before-browser'}),{mode:0o600,flag:'wx'});}};
   const orchestrator=new RotationOrchestrator({vault,runner,events,recoveryStore});
   const result=await orchestrator.rotate({accountId:secret.cipherId,passwordLength:24,template});
   if(result.status!=='succeeded') {
