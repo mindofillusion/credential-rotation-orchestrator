@@ -17,3 +17,7 @@ Le coffre reste derrière son courtier SSH NAS. Le navigateur Windows utilise so
 La configuration d'association réside hors du logiciel. `CRO_REMOTE_SIT_DIR` active explicitement le raccordement. Sans cette option, le mode simulation reste actif. Le relais est livré dans `sit/remote/bridge.mjs`. Sur un hôte géré par un autre système de maintenance, son installation suit la chaîne signée de cet hôte ; CRO reste indépendant de son interface et de sa numérotation.
 
 Tests locaux : HTTPS, refus sans signature, transmission authentifiée et refus de rejeu. La qualification réseau et les rotations depuis Windows doivent être effectuées après installation et activation du relais. La mise en service automatique au redémarrage n'est pas incluse dans ce premier relais.
+
+## Correctif de chemin du relais sur l'hôte de qualification
+
+La première installation a révélé que l'updater crée ses nouveaux répertoires avec un umask 077 : le fichier 0644 devenait inaccessible au compte non privilégié derrière un parent 0700 root. Le correctif place le relais public directement sous le répertoire logiciel existant et traversable, sans élargir les droits du dossier privé. Le test d'installation reproduit désormais cet umask et vérifie les droits de traversée de chaque parent ainsi que la lecture du fichier. L'activation attend l'installation du correctif signé ; aucune disponibilité réseau n'est revendiquée avant le test réel.
