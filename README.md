@@ -5,6 +5,14 @@ Credential Rotation Orchestrator (CRO) is a local-first, vault-agnostic project 
 > [!WARNING]
 > This repository is an early security prototype. The default mode uses a simulated vault and website runner. An explicit forums SIT mode performs real rotations against dedicated local phpBB, MyBB and SMF fixtures and Vaultwarden test account. Do not use production credentials.
 
+## Independent application — version 0.2.3
+
+CRO has its own frontend, process, data directory and release cycle. **SER5 is a test host, not a product dependency.** The previously proposed SER5 update package is not the distribution channel for this project.
+
+Install the standalone archive with `npm install --global --ignore-scripts ./credential-rotation-orchestrator-0.2.3.tgz`, then run `cro` and open <http://127.0.0.1:8787>. Alternatively, extract it and run `node package/bin/cro.js`. No system service or host configuration is changed.
+
+See [standalone installation, upgrades and current limits](docs/standalone.md). The default application is portable; real Vaultwarden rotations still require the explicitly configured experimental SIT adapter. A general-purpose vault setup wizard and scheduler are not yet implemented.
+
 ## Current prototype
 
 The current milestone validates the parts that must fail safely and adds a local template workshop:
@@ -37,7 +45,7 @@ npm start
 
 Open <http://127.0.0.1:8787>. The server binds to loopback by default.
 
-Runtime data is stored in `.cro-data/` by default. Choose another private directory with `--data-dir /path` or `CRO_DATA_DIR`. The generated master key and encrypted signing identity are never committed.
+The launcher stores runtime data in the user data directory outside the software installation; existing checkouts with `.cro-data/` retain it. Choose another private directory with `--data-dir /path` or `CRO_DATA_DIR`. The generated master key and encrypted signing identity are never committed.
 
 ## Security model
 

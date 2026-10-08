@@ -8,3 +8,8 @@ recovery/
 local-keys/
 .cro-data/
 .cro-sit/
+
+__pycache__/
+*.pyc
+dist/
+*.tgz

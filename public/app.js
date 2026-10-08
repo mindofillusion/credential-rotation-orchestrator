@@ -102,6 +102,7 @@ function renderTemplates(templates) {
 
 async function loadOverview() {
   const data = await api('/api/overview');
+  document.querySelector('#app-version').textContent=data.application?.version ? `· v${data.application.version}` : '';
   elements.mode.textContent = data.mode === 'simulation' ? 'Simulation' : data.mode;
   elements.vault.textContent = data.vault.connected ? `${data.vault.adapter} connecté` : 'déconnecté';
   elements.templateCount.textContent = String(data.templates.length);
@@ -270,6 +271,7 @@ for (const type of ['credential.rotation.started', 'credential.rotation.succeede
 }
 
 loadOverview().catch((error) => {
+  document.querySelector('#app-version').textContent=data.application?.version ? `· v${data.application.version}` : '';
   elements.mode.textContent = 'Indisponible';
   elements.result.textContent = `Impossible de charger l’application : ${error.message}`;
 });

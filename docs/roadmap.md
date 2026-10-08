@@ -57,3 +57,22 @@
 - no known secret leakage paths;
 - documented key rotation and registry compromise procedure;
 - at least three maintained site templates with compatibility tests.
+
+## Distribution indépendante — 0.2.3
+
+- [x] commande `cro`, archive npm locale, version propre au produit
+- [x] stockage utilisateur séparé du logiciel ; identité conservée après déplacement
+- [x] démarrage sans SER5, NAS ou configuration SIT
+- [ ] assistant de première installation et connecteur Vaultwarden portable
+- [ ] qualification native Windows/macOS et protection des secrets par le système
+
+## Validation par courriel — étude ouverte le 8 octobre 2026
+
+- [ ] conserver l'adresse déjà associée au compte, sans imposer une boîte générique
+- [ ] checkpoint manuel : suspendre, notifier localement et reprendre après validation
+- [ ] étudier un connecteur de messagerie facultatif avec consentement et droits minimaux
+- [ ] lier chaque code/lien à une seule opération, au site et à une durée de validité
+- [ ] vérifier le résultat côté site avant de confirmer la mise à jour du coffre
+- [ ] tests SIT : code expiré, messages simultanés, lien déjà consommé, mauvaise origine
+
+Le cas impots.gouv.fr signalé par l'utilisateur reste à vérifier sur des sources officielles : aucune compatibilité n'est revendiquée. Aucun essai sur un compte fiscal réel n'est prévu. Le mode assisté est le premier objectif ; l'automatisation de la lecture des courriels est une intégration distincte.

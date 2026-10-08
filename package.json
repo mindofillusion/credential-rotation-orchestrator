@@ -1,6 +1,6 @@
 {
   "name": "credential-rotation-orchestrator",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "description": "Local-first credential remediation and password rotation orchestrator.",
   "type": "module",
@@ -8,11 +8,35 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "node src/server/main.js",
-    "start": "node src/server/main.js",
+    "dev": "node bin/cro.js",
+    "start": "node bin/cro.js",
     "test": "node --test",
     "check": "node --check src/server/main.js && node --check public/app.js && npm test",
     "test:sit:phpbb": "node sit/phpbb/rotation-smoke.mjs"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "bin": {
+    "cro": "bin/cro.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mindofillusion/credential-rotation-orchestrator.git"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "public/",
+    "docs/",
+    "LICENSE",
+    "SECURITY.md",
+    "sit/phpbb/template-draft.json",
+    "sit/phpbb/rotation-smoke.mjs",
+    "sit/forums/rotation-runner.mjs",
+    "sit/forums/mybb-template.json",
+    "sit/forums/smf-template.json",
+    "sit/cms/wordpress-template.json",
+    "sit/cms/joomla-template.json",
+    "sit/cms/drupal-template.json",
+    "sit/access/account-smoke.mjs"
+  ]
 }

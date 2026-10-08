@@ -166,9 +166,12 @@ async function serveStatic(pathname, response) {
   }
 }
 
+const appVersion=JSON.parse(await readFile(join(root,'package.json'),'utf8')).version;
 const server = createServer(async (request, response) => {
   if (sitEnabled && request.headers.host !== `127.0.0.1:${port}`) return json(response,403,{error:'Host rejected'});
   const url = new URL(request.url, `http://${request.headers.host || `${host}:${port}`}`);
+
+  if (request.method === 'GET' && url.pathname === '/api/health')return json(response,200,{application:'credential-rotation-orchestrator',version:appVersion,mode:sitEnabled?'sit':'simulation'});
 
   if (request.method === 'GET' && url.pathname === '/api/overview') {
     const sitState = sit ? await sit.state() : null;
@@ -176,6 +179,7 @@ const server = createServer(async (request, response) => {
     const accounts = sitState ? forumStates.flatMap(f=>f.account?[f.account]:[]) : await vault.listEntries();
     const templates = await templateRepository.list();
     return json(response, 200, {
+      application:{name:'Credential Rotation Orchestrator',version:appVersion},
       mode: sitEnabled ? 'Sites SIT' : 'simulation',
       vault: { adapter: sitEnabled ? 'Vaultwarden SIT' : 'mock', connected: sitEnabled ? Boolean(sitState?.lastResult?.vaultUpdated) : true },
       sit: sitState,
