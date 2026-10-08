@@ -76,3 +76,13 @@
 - [ ] tests SIT : code expiré, messages simultanés, lien déjà consommé, mauvaise origine
 
 Le cas impots.gouv.fr signalé par l'utilisateur reste à vérifier sur des sources officielles : aucune compatibilité n'est revendiquée. Aucun essai sur un compte fiscal réel n'est prévu. Le mode assisté est le premier objectif ; l'automatisation de la lecture des courriels est une intégration distincte.
+
+### Piste utilisateur — client mail léger (8 octobre 2026)
+
+Prévoir un client mail facultatif intégré à CRO, configuré par l'utilisateur, qui ne collecte que les messages de validation et peut les traiter automatiquement selon une politique explicite par site et par compte. Conserver l'adresse personnelle existante ; ne pas imposer de boîte générique.
+
+Distinguer les codes à saisir, les liens à ouvrir et les validations exigeant réellement une réponse par courriel. L'envoi automatique de réponses est une option distincte, désactivée par défaut et activable par l'utilisateur pour les parcours autorisés. La corrélation doit porter sur une opération en attente, son compte, son origine et son délai ; les messages inattendus ou ambigus restent en attente humaine. Ne pas suivre les instructions libres du contenu d'un message.
+
+Étudier OAuth et les permissions minimales, les filtres côté serveur lorsque disponibles, la conservation limitée des métadonnées, la protection des jetons et l'absence de secrets dans les alertes. Certains fournisseurs accordent une permission de lecture plus large que le filtre applicatif : l'interface devra expliquer cette différence. Une validation par mail ne prouve jamais à elle seule le changement du mot de passe : vérifier ensuite une nouvelle connexion et la relecture du coffre.
+
+Cette piste est documentée, pas implémentée. Le lecteur Mailpit SIT en développement est limité à l'observation locale : aucun envoi, aucune réponse automatique et aucun accès à une messagerie personnelle.

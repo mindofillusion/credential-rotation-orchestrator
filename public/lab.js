@@ -1,0 +1,20 @@
+const $=id=>document.getElementById(id);
+let state, token;
+const labels={awaiting_email:'Message attendu',awaiting_user:'Validation humaine attendue',ready_to_verify:'À vérifier sur le site et dans le coffre',ambiguous:'Plusieurs messages : contrôle humain requis',expired:'Délai expiré',closed_unverified:'Clôturée sans vérification'};
+function element(tag,text){const e=document.createElement(tag);e.textContent=text;return e;}
+function options(select,items){const old=select.value;select.replaceChildren(...items.map(([id,name])=>{const e=element('option',name);e.value=id;return e;}));if(items.some(([id])=>id===old))select.value=old;}
+async function api(path,body){const r=await fetch(`/api/lab/${path}`,body===undefined?{}:{method:'POST',headers:{'content-type':'application/json','x-cro-lab-token':token},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw new Error(data.error||'Requête refusée');return data;}
+function versions(){const app=state.applications.find(a=>a.id===$('lab-product').value);options($('lab-version'),(app?.versions||[]).map(v=>[v.version,`${v.version}${v.quarantine?' — isolement requis':''}`]));$('lab-plan').querySelector('button').disabled=!app?.versions.length;}
+async function refresh(){state=await api('overview');token=state.token;options($('lab-product'),state.applications.map(a=>[a.id,`${a.name} (${a.family})`]));versions();options($('lab-instance'),state.instances.map(i=>[i.id,`${i.name} ${i.version}`]));$('lab-checkpoint').querySelector('button').disabled=!state.instances.length;
+  $('lab-mail-status').textContent=state.mailpit.reachable?'Mailpit local joignable. Observation de messages de test disponible.':state.mailpit.configured?'Mailpit configuré mais inaccessible.':'Mailpit non configuré. La confirmation humaine reste disponible.';
+  $('lab-instances').replaceChildren(...state.instances.map(i=>element('p',`${i.name} ${i.version} — planifié, non déployé${i.quarantine?' ; isolement requis':''}`)));
+  $('lab-checkpoints').replaceChildren(...state.checkpoints.map(c=>{const row=element('article','');const i=state.instances.find(i=>i.id===c.instanceId);row.append(element('p',`${i?.name||'Plan'} ${i?.version||''} — ${labels[c.state]||c.state}. Rotation non vérifiée.`));row.append(element('p',`Échéance : ${new Date(c.expiresAt).toLocaleString()} · Messages candidats : ${c.matchedMessages}`));
+    const actions=[];if(['awaiting_email','awaiting_user'].includes(c.state))actions.push(['inspect','Vérifier l’attente']);if(c.state==='awaiting_user')actions.push(['acknowledge','J’ai effectué la validation']);if(c.state!=='closed_unverified')actions.push(['close','Clôturer sans vérifier']);
+    for(const [action,label] of actions){const b=element('button',label);b.type='button';b.addEventListener('click',()=>perform(b,()=>api(action,{id:c.id})));row.append(b);}return row;}));
+}
+async function perform(button,fn){button.disabled=true;try{await fn();await refresh();$('lab-feedback').textContent='État enregistré. Aucune rotation confirmée par cette action.';}catch(e){$('lab-feedback').textContent=e.message;}finally{button.disabled=false;}}
+$('lab-product').addEventListener('change',versions);
+$('lab-mode').addEventListener('change',()=>{const mail=$('lab-mode').value==='mailpit';$('lab-mail-fields').hidden=!mail;$('lab-sender').required=mail;$('lab-subject').required=mail;});
+$('lab-plan').addEventListener('submit',e=>{e.preventDefault();perform(e.submitter,()=>api('instances',{product:$('lab-product').value,version:$('lab-version').value}));});
+$('lab-checkpoint').addEventListener('submit',e=>{e.preventDefault();perform(e.submitter,async()=>{await api('checkpoints',{instanceId:$('lab-instance').value,mode:$('lab-mode').value,recipient:$('lab-recipient').value,sender:$('lab-sender').value,subject:$('lab-subject').value,timeoutMinutes:Number($('lab-timeout').value)});$('lab-recipient').value='';$('lab-sender').value='';$('lab-subject').value='';});});
+document.querySelector('[data-view="lab"]').addEventListener('click',()=>refresh().catch(e=>{$('lab-feedback').textContent=e.message;}));

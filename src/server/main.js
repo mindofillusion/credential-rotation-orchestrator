@@ -1,3 +1,4 @@
+import { LabService } from '../lab/service.js';
 import {remoteSitConfig,forwardSit} from './remote-sit.js';
 import { UpdateManager } from '../updates/manager.js';
 import { randomBytes } from 'node:crypto';
@@ -35,6 +36,9 @@ const appVersion=JSON.parse(await readFile(join(root,'package.json'),'utf8')).ve
 const pairedDirectory=process.env.CRO_REMOTE_SIT_DIR;
 const pairedSit=await remoteSitConfig(pairedDirectory);
 const updateToken=randomBytes(32).toString('hex');
+const labToken=randomBytes(32).toString('hex');
+const lab=new LabService({dataDirectory,sourceRoot:root});
+await lab.initialize();
 const updater=new UpdateManager({root:process.env.CRO_INSTALL_ROOT,version:appVersion,sourceRoot:root,port,host,dataDirectory});
 
 const cmsEnabled=process.env.CRO_ENABLE_CMS_SIT === '1';
@@ -179,7 +183,7 @@ const server = createServer(async (request, response) => {
   if (sitEnabled && request.headers.host !== `127.0.0.1:${port}`) return json(response,403,{error:'Host rejected'});
   const url = new URL(request.url, `http://${request.headers.host || `${host}:${port}`}`);
 
-  if (request.method === 'GET' && url.pathname === '/api/health')return json(response,200,{application:'credential-rotation-orchestrator',version:appVersion,mode:sitEnabled?'sit':'simulation'});
+  if (request.method === 'GET' && url.pathname === '/api/health')return json(response,200,{application:'credential-rotation-orchestrator',version:appVersion,mode:pairedSit?'paired-sit':sitEnabled?'sit':'simulation'});
 
   if(url.pathname.startsWith('/api/updates/')){
     if(request.headers.host!==`127.0.0.1:${port}`)return json(response,403,{error:'Accès local uniquement'});
@@ -198,6 +202,22 @@ const server = createServer(async (request, response) => {
       }
     }catch(e){return json(response,400,{error:e.message});}
     return json(response,404,{error:'Route inconnue'});
+  }
+
+  // Local laboratory data must never be forwarded to the paired SIT server.
+  if(url.pathname.startsWith('/api/lab/')){
+    if(host!=='127.0.0.1'||request.headers.host!==`127.0.0.1:${port}`)return json(response,403,{error:'Accès local uniquement'});
+    try {
+      if(request.method==='GET'&&url.pathname==='/api/lab/overview')return json(response,200,{...await lab.overview(),token:labToken});
+      if(request.method!=='POST'||request.headers.origin!==`http://127.0.0.1:${port}`||request.headers['x-cro-lab-token']!==labToken)return json(response,403,{error:'Requête Laboratoire refusée'});
+      const body=await readJson(request);
+      if(url.pathname==='/api/lab/instances')return json(response,200,await lab.createInstance(body));
+      if(url.pathname==='/api/lab/checkpoints')return json(response,200,await lab.createCheckpoint(body));
+      if(url.pathname==='/api/lab/inspect')return json(response,200,await lab.inspect(body.id));
+      if(url.pathname==='/api/lab/acknowledge')return json(response,200,await lab.acknowledge(body));
+      if(url.pathname==='/api/lab/close')return json(response,200,await lab.close(body));
+      return json(response,404,{error:'Route Laboratoire inconnue'});
+    } catch {return json(response,400,{error:'Opération refusée : vérifier les champs, les attentes actives et la disponibilité de Mailpit.'});}
   }
 
   if(pairedSit&&url.pathname.startsWith('/api/')&&url.pathname!=='/api/health'){

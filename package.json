@@ -1,6 +1,6 @@
 {
   "name": "credential-rotation-orchestrator",
-  "version": "0.2.6",
+  "version": "0.3.0-dev.1",
   "private": true,
   "description": "Local-first credential remediation and password rotation orchestrator.",
   "type": "module",
@@ -37,6 +37,7 @@
     "sit/cms/wordpress-template.json",
     "sit/cms/joomla-template.json",
     "sit/cms/drupal-template.json",
-    "sit/access/account-smoke.mjs"
+    "sit/access/account-smoke.mjs",
+    "sit/catalogue/catalogue.json"
   ]
 }
