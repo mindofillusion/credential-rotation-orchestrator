@@ -1,3 +1,4 @@
+import { recoveryBinding } from './reconcile-rotation.js';
 import { generatePassword } from './password-generator.js';
 
 export class RotationOrchestrator {
@@ -10,7 +11,15 @@ export class RotationOrchestrator {
     this.recoveryStore = recoveryStore;
   }
 
-  async rotate({ accountId, template, passwordLength = 24 }) {
+  async rotate(options) {
+    if(this.recoveryStore.withLock){
+      try{return await this.recoveryStore.withLock(options.accountId,()=>this.#rotate(options));}
+      catch{return {status:'blocked',reason:'recovery_lock_failed'};}
+    }
+    return this.#rotate(options);
+  }
+
+  async #rotate({ accountId, template, passwordLength = 24 }) {
     if (this.#active.has(accountId)) return {status:'blocked', reason:'rotation_in_progress'};
     this.#active.add(accountId);
     const subject = `account/${accountId}`;
@@ -30,7 +39,7 @@ export class RotationOrchestrator {
       const nextPassword = generatePassword(passwordLength);
       // Fail closed: persist the candidate before a browser can submit it.
       // Real runners must supply a durable private store; memory is simulation only.
-      await this.recoveryStore.put(accountId, nextPassword);
+      await this.recoveryStore.put(accountId, nextPassword, {credential, binding:recoveryBinding(template)});
       enteredRunner = true;
       remoteChanged = null; // A thrown runner cannot prove that submission did not occur.
       reason = 'remote_outcome_unknown';
