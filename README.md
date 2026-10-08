@@ -69,6 +69,7 @@ Read:
 - [Template format](docs/template-format.md)
 - [Event contract](docs/events.md)
 - [Roadmap](docs/roadmap.md)
+- [Catalogue SIT multiversion et mesures de diffusion](sit/catalogue/README.md)
 - [Security policy](SECURITY.md)
 - [Local storage and identity](docs/local-security.md)
 - [Playwright action-fragment import and limitations](docs/codegen-import.md)

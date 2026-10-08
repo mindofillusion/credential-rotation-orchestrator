@@ -1,0 +1,135 @@
+family	id	name	repository	stack	mechanisms	priority
+forums	phpbb	phpBB	phpbb/phpbb	PHP + SQL	password,csrf,session	1
+forums	mybb	MyBB	mybb/mybb	PHP + SQL	password,csrf,session	1
+forums	smf	Simple Machines Forum	SimpleMachines/SMF	PHP + SQL	password,csrf,session	1
+forums	discourse	Discourse	discourse/discourse	Ruby + PostgreSQL + Redis	password,email,totp,sso	1
+forums	flarum	Flarum	flarum/flarum	PHP + MySQL	password,email,spa	1
+forums	nodebb	NodeBB	NodeBB/NodeBB	Node + Redis/PostgreSQL/MongoDB	password,email,spa	1
+forums	vanilla	Vanilla Forums	vanilla/vanilla	PHP + MySQL	password,email,sso	3
+forums	fluxbb	FluxBB	fluxbb/fluxbb	PHP + SQL	password,csrf	3
+forums	bbpress	bbPress	bbpress/bbPress	WordPress extension	password,email	2
+forums	answer	Apache Answer	apache/answer	Go + SQL	password,email,spa	2
+forums	lemmy	Lemmy	LemmyNet/lemmy	Rust + PostgreSQL	password,email,totp	2
+cms	wordpress	WordPress	WordPress/WordPress	PHP + MySQL	password,email,session	1
+cms	joomla	Joomla	joomla/joomla-cms	PHP + SQL	password,email,totp,webauthn	1
+cms	drupal	Drupal	drupal/drupal	PHP + SQL	password,email,reauth	1
+cms	typo3	TYPO3	typo3/typo3	PHP + SQL	password,email,totp	2
+cms	ghost	Ghost	TryGhost/Ghost	Node + MySQL	password,email,magiclink	1
+cms	grav	Grav	getgrav/grav	PHP + flat files + Admin plugin	password,totp	2
+cms	concrete	Concrete CMS	concretecms/concretecms	PHP + MySQL	password,email	2
+cms	contao	Contao	contao/contao	PHP + MySQL	password,email,totp	2
+cms	processwire	ProcessWire	processwire/processwire	PHP + MySQL	password,email	2
+cms	craft	Craft CMS	craftcms/cms	PHP + SQL; edition/license review	password,email,totp	2
+cms	statamic	Statamic	statamic/cms	PHP; edition/license review	password,email	3
+cms	silverstripe	Silverstripe CMS	silverstripe/silverstripe-framework	PHP + SQL	password,email	2
+cms	bolt	Bolt CMS	bolt/core	PHP + SQL	password,email	3
+cms	plone	Plone	plone/Products.CMFPlone	Python + ZODB	password,email,sso	2
+cms	wagtail	Wagtail	wagtail/wagtail	Python + SQL	password,email,admin	2
+cms	strapi	Strapi	strapi/strapi	Node + SQL	password,email,spa,admin	1
+cms	directus	Directus	directus/directus	Node + SQL; license review	password,email,totp,sso	1
+cms	payload	Payload	payloadcms/payload	Node + SQL/MongoDB	password,email,spa	2
+cms	umbraco	Umbraco	umbraco/Umbraco-CMS	.NET + SQL	password,email,admin	2
+cms	dnn	DNN Platform	dnnsoftware/Dnn.Platform	Windows IIS + SQL Server	password,email,admin	3
+wiki	mediawiki	MediaWiki	wikimedia/mediawiki	PHP + SQL	password,email,reauth	1
+wiki	dokuwiki	DokuWiki	dokuwiki/dokuwiki	PHP + flat files	password,email,csrf	1
+wiki	bookstack	BookStack	BookStackApp/BookStack	PHP + MySQL	password,email,totp,sso	1
+wiki	wikijs	Wiki.js	Requarks/wiki	Node + SQL	password,email,sso,spa	2
+wiki	xwiki	XWiki	xwiki/xwiki-platform	Java + SQL	password,email,sso	2
+wiki	joplin	Joplin Server	laurent22/joplin	Node + PostgreSQL	password,email	2
+wiki	outline	Outline	outline/outline	Node + PostgreSQL + Redis	magiclink,sso	2
+commerce	prestashop	PrestaShop	PrestaShop/PrestaShop	PHP + MySQL	password,email,customer-admin	1
+commerce	woocommerce	WooCommerce	woocommerce/woocommerce	WordPress extension	password,email,customer-admin	1
+commerce	magento	Magento Open Source	magento/magento2	PHP + MySQL + search	password,email,totp,customer-admin	2
+commerce	opencart	OpenCart	opencart/opencart	PHP + MySQL	password,email,customer-admin	1
+commerce	shopware	Shopware	shopware/shopware	PHP + MySQL	password,email,customer-admin	2
+commerce	sylius	Sylius	Sylius/Sylius	PHP + SQL	password,email,customer-admin	2
+commerce	saleor	Saleor	saleor/saleor	Python + PostgreSQL + frontend	password,email,api	2
+commerce	medusa	Medusa	medusajs/medusa	Node + PostgreSQL + frontend	password,email,api	2
+commerce	nopcommerce	nopCommerce	nopSolutions/nopCommerce	.NET + SQL	password,email,customer-admin	2
+commerce	bagisto	Bagisto	bagisto/bagisto	PHP + MySQL	password,email,customer-admin	2
+lms	moodle	Moodle	moodle/moodle	PHP + SQL	password,email,expiry,sso	1
+lms	chamilo	Chamilo	chamilo/chamilo-lms	PHP + MySQL	password,email,expiry	2
+lms	openedx	Open edX	openedx/edx-platform	Python + multiple services	password,email,sso	3
+lms	canvas	Canvas LMS	instructure/canvas-lms	Ruby + PostgreSQL + Redis	password,email,sso	3
+lms	ilias	ILIAS	ILIAS-eLearning/ILIAS	PHP + MySQL	password,email,expiry	2
+collaboration	nextcloud	Nextcloud	nextcloud/server	PHP + SQL	password,email,totp,webauthn,app-password,sso	1
+collaboration	owncloud	ownCloud Server	owncloud/core	PHP + SQL	password,email,app-password,sso	2
+collaboration	seafile	Seafile	haiwen/seafile	C/Python + SQL	password,email,totp	2
+collaboration	pydio	Pydio Cells	pydio/cells	Go + SQL	password,email,sso	2
+collaboration	paperless	Paperless-ngx	paperless-ngx/paperless-ngx	Python + SQL + Redis	password,email,totp,sso	2
+collaboration	immich	Immich	immich-app/immich	Node + PostgreSQL + Redis + ML	password,sso,spa	2
+collaboration	photoprism	PhotoPrism	photoprism/photoprism	Go + SQL	password,app-password	2
+collaboration	jellyfin	Jellyfin	jellyfin/jellyfin	.NET + SQLite	password,admin,session	2
+collaboration	navidrome	Navidrome	navidrome/navidrome	Go + SQLite	password,admin,spa	2
+collaboration	mattermost	Mattermost	mattermost/mattermost	Go + PostgreSQL	password,email,totp,sso	1
+collaboration	rocketchat	Rocket.Chat	RocketChat/Rocket.Chat	Node + MongoDB	password,email,totp,sso	2
+collaboration	zulip	Zulip	zulip/zulip	Python + PostgreSQL + services	password,email,totp,sso	2
+collaboration	mastodon	Mastodon	mastodon/mastodon	Ruby + PostgreSQL + Redis	password,email,totp,webauthn	2
+collaboration	friendica	Friendica	friendica/friendica	PHP + SQL	password,email	3
+collaboration	humhub	HumHub	humhub/humhub	PHP + SQL	password,email,sso	2
+dev	gitea	Gitea	go-gitea/gitea	Go + SQL	password,email,totp,webauthn,token	1
+dev	forgejo	Forgejo		Go + SQL	password,email,totp,webauthn,token	1
+dev	gitlab	GitLab CE	gitlabhq/gitlabhq	Ruby + PostgreSQL + Redis + services	password,email,totp,webauthn,sso	2
+dev	jenkins	Jenkins	jenkinsci/jenkins	Java	password,token,sso	2
+dev	redmine	Redmine	redmine/redmine	Ruby + SQL	password,email,expiry	1
+dev	openproject	OpenProject	opf/openproject	Ruby + PostgreSQL	password,email,totp,sso	2
+dev	taiga	Taiga	taigaio/taiga-back	Python + PostgreSQL + frontend	password,email,spa	2
+dev	wekan	Wekan	wekan/wekan	Node + MongoDB	password,email,sso	2
+dev	kanboard	Kanboard	kanboard/kanboard	PHP + SQL	password,totp,sso	1
+dev	vikunja	Vikunja	go-vikunja/vikunja	Go + SQL	password,email,totp,sso	2
+dev	plane	Plane	makeplane/plane	Python/Node + PostgreSQL + Redis	password,email,magiclink,sso	2
+dev	gerrit	Gerrit	GerritCodeReview/gerrit	Java	password,sso,token	3
+dev	nexus	Nexus Repository	sonatype/nexus-public	Java + SQL; edition review	password,reauth,admin	3
+dev	harbor	Harbor	goharbor/harbor	Go + PostgreSQL + Redis	password,sso,token	2
+support	glpi	GLPI	glpi-project/glpi	PHP + MySQL	password,email,sso	1
+support	zammad	Zammad	zammad/zammad	Ruby + PostgreSQL + search	password,email,totp,sso	1
+support	osticket	osTicket	osTicket/osTicket	PHP + MySQL	password,email,customer-admin	1
+support	freescout	FreeScout	freescout-help-desk/freescout	PHP + MySQL	password,email	2
+support	helpy	Helpy	helpyio/helpy	Ruby + PostgreSQL	password,email	3
+support	uvdesk	UVdesk	uvdesk/community-skeleton	PHP + MySQL	password,email	2
+support	snipeit	Snipe-IT	snipe/snipe-it	PHP + MySQL	password,email,totp,sso	1
+business	dolibarr	Dolibarr	Dolibarr/dolibarr	PHP + SQL	password,email	1
+business	odoo	Odoo Community	odoo/odoo	Python + PostgreSQL	password,email,totp,sso	1
+business	erpnext	ERPNext	frappe/erpnext	Python + MariaDB + Redis + Frappe	password,email,totp,expiry	2
+business	suitecrm	SuiteCRM	salesagility/SuiteCRM	PHP + MySQL	password,email,expiry	2
+business	espocrm	EspoCRM	espocrm/espocrm	PHP + MySQL	password,email,totp	2
+business	invoice-ninja	Invoice Ninja	invoiceninja/invoiceninja	PHP + MySQL; license review	password,email,totp,customer-admin	2
+business	akaunting	Akaunting	akaunting/akaunting	PHP + MySQL; modules review	password,email	2
+business	kimai	Kimai	kimai/kimai	PHP + SQL	password,email,totp,sso	2
+business	mautic	Mautic	mautic/mautic	PHP + MySQL	password,email,admin	2
+business	limesurvey	LimeSurvey	LimeSurvey/LimeSurvey	PHP + SQL	password,email	2
+identity	keycloak	Keycloak	keycloak/keycloak	Java + SQL	password,email,totp,webauthn,expiry,sso,recovery	1
+identity	authentik	authentik	goauthentik/authentik	Python + PostgreSQL + worker	password,email,totp,webauthn,sso,recovery	1
+identity	authelia	Authelia	authelia/authelia	Go + SQL/LDAP	password,email,totp,webauthn,sso	1
+identity	zitadel	ZITADEL	zitadel/zitadel	Go + PostgreSQL	password,email,totp,webauthn,sso	2
+identity	kanidm	Kanidm	kanidm/kanidm	Rust	password,webauthn,sso,recovery	2
+identity	cas	Apereo CAS	apereo/cas	Java + backend	password,sso,totp,webauthn	2
+identity	kratos	Ory Kratos	ory/kratos	Go + SQL + frontend	password,email,totp,webauthn,recovery	1
+identity	lldap	LLDAP	lldap/lldap	Rust + SQL	password,email,ldap	1
+identity	lam	LDAP Account Manager	LDAPAccountManager/lam	PHP + LDAP	password,expiry,ldap	2
+identity	ssp	Self Service Password	ltb-project/self-service-password	PHP + LDAP	password,email,expiry,ldap	1
+identity	simplesaml	SimpleSAMLphp	simplesamlphp/simplesamlphp	PHP + identity backend	password,sso	2
+identity	privacyidea	privacyIDEA	privacyidea/privacyidea	Python + SQL	password,totp,webauthn,recovery	2
+identity	fusionauth	FusionAuth	FusionAuth/fusionauth-issues	Java + SQL; license/edition review	password,email,totp,sso	3
+security	vaultwarden	Vaultwarden	dani-garcia/vaultwarden	Rust + SQL	password,email,totp,webauthn,recovery	1
+security	passbolt	Passbolt	passbolt/passbolt_api	PHP + SQL + browser extension	password,email,totp,recovery	2
+security	psono	Psono	psono/psono-server	Python + PostgreSQL + frontend	password,email,totp,recovery	2
+security	teampass	TeamPass	nilsteampassnet/TeamPass	PHP + MySQL	password,email,totp	2
+ops	grafana	Grafana	grafana/grafana	Go + SQL	password,email,sso,token	1
+ops	zabbix	Zabbix	zabbix/zabbix	C/PHP + SQL	password,sso,admin	2
+ops	matomo	Matomo	matomo-org/matomo	PHP + MySQL	password,email,totp	1
+ops	metabase	Metabase	metabase/metabase	Java + SQL	password,email,sso	2
+ops	superset	Apache Superset	apache/superset	Python + SQL + Redis	password,sso,admin	2
+ops	portainer	Portainer CE	portainer/portainer	Go + container API	password,sso,admin	3
+ops	uptime-kuma	Uptime Kuma	louislam/uptime-kuma	Node + SQL	password,totp	1
+ops	n8n	n8n	n8n-io/n8n	Node + SQL; license review	password,email,totp	2
+ops	gitea-act	act (auxiliaire CI, pas serveur web)	nektos/act	Container execution	infrastructure	3
+mail	roundcube	Roundcube	roundcube/roundcubemail	PHP + SQL + IMAP + password plugin	password,plugin,imap	1
+mail	snappymail	SnappyMail	the-djmaze/snappymail	PHP + IMAP + password backend	password,plugin,imap	1
+mail	sogo	SOGo	Alinto/sogo	Objective-C + SQL + IMAP/LDAP	password,ldap,imap	2
+lab	mailpit	Mailpit	axllent/mailpit	Go	infrastructure,email	1
+lab	greenmail	GreenMail	greenmail-mail-test/greenmail	Java	infrastructure,email,imap	1
+lab	wiremock	WireMock	wiremock/wiremock	Java	infrastructure,faults	1
+lab	toxiproxy	Toxiproxy	Shopify/toxiproxy	Go	infrastructure,faults	1
+lab	boulder	Pebble ACME	letsencrypt/pebble	Go	infrastructure,tls	2
+lab	playwright	Playwright	microsoft/playwright	Node + browsers	infrastructure,webauthn	1

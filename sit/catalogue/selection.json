@@ -1,0 +1,287 @@
+{
+  "date": "2026-10-08",
+  "catalogue_version": "1.0.0",
+  "overrides": {
+    "wordpress": {
+      "versions": [
+        "7.1.3",
+        "7.0.7",
+        "6.9.10",
+        "6.8.11",
+        "6.7.10"
+      ],
+      "reason": "Branches présentes dans les statistiques publiques; ajouter 4.9 et 6.4–6.6 après verrouillage des archives si leur couverture reste utile."
+    },
+    "joomla": {
+      "versions": [
+        "6.1.4",
+        "5.4.9",
+        "4.4.14",
+        "3.10.12"
+      ],
+      "reason": "Diffusion observée des branches 3/4/5/6; 3 et 4 en quarantaine historique."
+    },
+    "drupal": {
+      "versions": [
+        "11.4.8",
+        "11.3.18",
+        "10.6.18",
+        "9.5.11",
+        "7.103"
+      ],
+      "reason": "Usage déclaré et rupture d’architecture; 7 et 9 en quarantaine historique."
+    },
+    "phpbb": {
+      "versions": [
+        "3.3.19",
+        "3.3.17"
+      ],
+      "reason": "Régression récente; 3.3.18 exclue de la sélection, correctif de sécurité incomplet signalé par l’éditeur. Ancienne branche 3.2 à verrouiller séparément."
+    },
+    "mybb": {
+      "versions": [
+        "1.8.41",
+        "1.8.40"
+      ],
+      "reason": "1.8.41 documentée dans le banc existant; 1.8.40 confirmée par la page officielle. Pas de statistique de diffusion par version obtenue."
+    },
+    "moodle": {
+      "versions": [
+        "5.3.0",
+        "5.2.4",
+        "5.1.8",
+        "5.0.11",
+        "4.5.15"
+      ],
+      "reason": "4.5 et 5.2 dominent les inscriptions observées; conserver 5.0/5.1, surveiller 5.3. Ajouter 4.1 après verrouillage d’archive."
+    },
+    "forgejo": {
+      "versions": [
+        "16.0.5",
+        "15.0.9"
+      ],
+      "reason": "Version stable et LTS attestées par la page officielle de versions."
+    },
+    "prestashop": {
+      "versions": [
+        "9.2.0",
+        "9.1.5",
+        "8.2.8"
+      ],
+      "reason": "Branches distinctes; diffusion par version inconnue. Ajouter 1.7 après recherche d’usage et verrouillage."
+    },
+    "mediawiki": {
+      "versions": [
+        "1.46.2",
+        "1.45.6",
+        "1.43.11"
+      ],
+      "reason": "Branches distinctes, dont série LTS à vérifier dans le cycle éditeur avant installation."
+    },
+    "nextcloud": {
+      "versions": [
+        "35.0.1",
+        "34.0.4",
+        "33.0.9",
+        "32.0.15"
+      ],
+      "reason": "Parcours de sécurité, sessions et mots de passe applicatifs; support de chaque branche à recontrôler."
+    },
+    "gitlab": {
+      "versions": [
+        "19.4.1",
+        "19.3.3",
+        "18.11.12"
+      ],
+      "reason": "Deux générations; lot lourd isolé, jamais connecté aux dépôts de production."
+    },
+    "joplin": {
+      "versions": [
+        "3.7.2",
+        "3.6.1",
+        "3.5.2"
+      ],
+      "reason": "Versions du serveur confirmées par son changelog dédié; 3.6.1 introduit MFA, utile pour comparer avant/après. Ne pas utiliser les versions desktop du flux."
+    },
+    "seafile": {
+      "versions": [],
+      "reason": "Le dépôt seafile est un composant; verrouiller l’ensemble serveur et Seahub compatibles avant sélection."
+    },
+    "superset": {
+      "versions": [],
+      "reason": "Le flux récent ne contient que des charts Helm. Une version de chart ne vaut pas version applicative."
+    },
+    "odoo": {
+      "versions": [],
+      "reason": "Branches 20/19/18 à examiner dans la documentation; épingler un commit/build Community, pas l’ancienne release addons trouvée dans le flux."
+    },
+    "canvas": {
+      "versions": [],
+      "reason": "Flux avec tags de build release/date; sélectionner les distributions stables et leurs migrations avant verrouillage."
+    },
+    "fusionauth": {
+      "versions": [],
+      "reason": "Dépôt de tickets, pas distribution. Recette et fonctionnalités selon licence à examiner."
+    },
+    "vanilla": {
+      "versions": [],
+      "reason": "Flux officiel historique indisponible (404); disponibilité d’une distribution auto-hébergeable à réexaminer."
+    },
+    "jenkins": {
+      "versions": [
+        "2.585",
+        "2.580.1"
+      ],
+      "reason": "Comparer génération hebdomadaire et publication avec correctif LTS; maintenance à confirmer avant déploiement."
+    },
+    "magento": {
+      "versions": [
+        "2.4.9",
+        "2.4.8-p5",
+        "2.4.7-p10"
+      ],
+      "reason": "Branches de correctifs distinctes, pile PHP/base/recherche adaptée à chacune."
+    },
+    "flarum": {
+      "versions": [
+        "1.8.19",
+        "1.8.12"
+      ],
+      "reason": "Distribution actuelle repérée et publication antérieure officielle. Le cœur Flarum et le squelette flarum/flarum doivent être verrouillés ensemble."
+    },
+    "openedx": {
+      "versions": [
+        "Verawood.1",
+        "Ulmo.4",
+        "Teak.3"
+      ],
+      "reason": "Tags nommés exacts publiés: release/verawood.1, release/ulmo.4, release/teak.3. Les sections détaillées indiquent Ulmo et Teak hors support; une phrase introductive de la page demeure incohérente avec ces sections."
+    }
+  },
+  "manual_releases": [
+    {
+      "id": "joomla",
+      "version": "4.4.14",
+      "source": "https://downloads.joomla.org/cms/joomla4/4-4-14",
+      "quarantine": true
+    },
+    {
+      "id": "joomla",
+      "version": "3.10.12",
+      "source": "https://downloads.joomla.org/cms/joomla3/3-10-12",
+      "quarantine": true
+    },
+    {
+      "id": "drupal",
+      "version": "9.5.11",
+      "source": "https://www.drupal.org/project/drupal/releases/9.5.11",
+      "quarantine": true
+    },
+    {
+      "id": "drupal",
+      "version": "7.103",
+      "source": "https://www.drupal.org/project/drupal/releases/7.103",
+      "quarantine": true
+    },
+    {
+      "id": "mybb",
+      "version": "1.8.41",
+      "source": "../forums/README.md",
+      "evidence": "existing-lab-report"
+    },
+    {
+      "id": "mybb",
+      "version": "1.8.40",
+      "source": "https://mybb.com/versions/1.8.40/"
+    },
+    {
+      "id": "forgejo",
+      "version": "16.0.5",
+      "source": "https://forgejo.org/releases/"
+    },
+    {
+      "id": "forgejo",
+      "version": "15.0.9",
+      "source": "https://forgejo.org/releases/"
+    },
+    {
+      "id": "flarum",
+      "version": "1.8.12",
+      "source": "https://discuss.flarum.org/d/38617-january-patch-release-1812"
+    },
+    {
+      "id": "joplin",
+      "version": "3.7.2",
+      "source": "https://joplinapp.org/help/about/changelog/server/",
+      "quarantine": false
+    },
+    {
+      "id": "joplin",
+      "version": "3.6.1",
+      "source": "https://joplinapp.org/help/about/changelog/server/",
+      "quarantine": false
+    },
+    {
+      "id": "joplin",
+      "version": "3.5.2",
+      "source": "https://joplinapp.org/help/about/changelog/server/",
+      "quarantine": false
+    },
+    {
+      "id": "openedx",
+      "version": "Verawood.1",
+      "source": "https://docs.openedx.org/en/latest/community/release_notes/named_release_branches_and_tags.html",
+      "quarantine": false
+    },
+    {
+      "id": "openedx",
+      "version": "Ulmo.4",
+      "source": "https://docs.openedx.org/en/latest/community/release_notes/named_release_branches_and_tags.html",
+      "quarantine": true
+    },
+    {
+      "id": "openedx",
+      "version": "Teak.3",
+      "source": "https://docs.openedx.org/en/latest/community/release_notes/named_release_branches_and_tags.html",
+      "quarantine": true
+    }
+  ],
+  "qualified": {
+    "phpbb": {
+      "version": "3.3.19",
+      "report": "../../docs/qualification-windows-sit-2026-10-08.md",
+      "last_qualified": "2026-10-08",
+      "live": "listening-2026-10-08"
+    },
+    "mybb": {
+      "version": "1.8.41",
+      "report": "../forums/README.md",
+      "last_qualified": "2026-10-07",
+      "live": "listening-2026-10-08"
+    },
+    "smf": {
+      "version": "2.1.7",
+      "report": "../forums/README.md",
+      "last_qualified": "2026-10-07",
+      "live": "listening-2026-10-08"
+    },
+    "wordpress": {
+      "version": "7.1.3",
+      "report": "../cms/README.md",
+      "last_qualified": "2026-10-07",
+      "live": "stopped-2026-10-08"
+    },
+    "joomla": {
+      "version": "6.1.4",
+      "report": "../cms/README.md",
+      "last_qualified": "2026-10-07",
+      "live": "stopped-2026-10-08"
+    },
+    "drupal": {
+      "version": "11.4.8",
+      "report": "../cms/README.md",
+      "last_qualified": "2026-10-07",
+      "live": "stopped-2026-10-08"
+    }
+  }
+}
