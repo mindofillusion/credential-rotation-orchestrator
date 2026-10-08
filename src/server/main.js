@@ -1,3 +1,5 @@
+import {remoteSitConfig,forwardSit} from './remote-sit.js';
+import { UpdateManager } from '../updates/manager.js';
 import { randomBytes } from 'node:crypto';
 import { PhpbbSitController } from './phpbb-sit.js';
 import { createServer } from 'node:http';
@@ -28,6 +30,12 @@ const port = Number(argumentValue('--port') || process.env.CRO_PORT || process.e
 const dataDirectory = normalize(
   argumentValue('--data-dir') || process.env.CRO_DATA_DIR || join(root, '.cro-data')
 );
+
+const appVersion=JSON.parse(await readFile(join(root,'package.json'),'utf8')).version;
+const pairedDirectory=process.env.CRO_REMOTE_SIT_DIR;
+const pairedSit=await remoteSitConfig(pairedDirectory);
+const updateToken=randomBytes(32).toString('hex');
+const updater=new UpdateManager({root:process.env.CRO_INSTALL_ROOT,version:appVersion,sourceRoot:root,port,host,dataDirectory});
 
 const cmsEnabled=process.env.CRO_ENABLE_CMS_SIT === '1';
 if(cmsEnabled && !isAbsolute(process.env.CRO_CMS_SIT_DIR || ''))throw new Error('Explicit CMS fixture directory required');
@@ -166,12 +174,36 @@ async function serveStatic(pathname, response) {
   }
 }
 
-const appVersion=JSON.parse(await readFile(join(root,'package.json'),'utf8')).version;
+
 const server = createServer(async (request, response) => {
   if (sitEnabled && request.headers.host !== `127.0.0.1:${port}`) return json(response,403,{error:'Host rejected'});
   const url = new URL(request.url, `http://${request.headers.host || `${host}:${port}`}`);
 
   if (request.method === 'GET' && url.pathname === '/api/health')return json(response,200,{application:'credential-rotation-orchestrator',version:appVersion,mode:sitEnabled?'sit':'simulation'});
+
+  if(url.pathname.startsWith('/api/updates/')){
+    if(request.headers.host!==`127.0.0.1:${port}`)return json(response,403,{error:'Accès local uniquement'});
+    if(request.method==='GET'&&url.pathname==='/api/updates/status'){
+      let last=null;try{last=JSON.parse(await readFile(join(process.env.CRO_INSTALL_ROOT,'last-update.json'),'utf8'));}catch{}
+      return json(response,200,{version:appVersion,enabled:!!process.env.CRO_INSTALL_ROOT,token:updateToken,last});
+    }
+    if(request.method!=='POST'||request.headers.origin!==`http://127.0.0.1:${port}`||request.headers['x-cro-update-token']!==updateToken)return json(response,403,{error:'Requête de mise à jour refusée'});
+    try{
+      const patch=await readJson(request);
+      if(url.pathname==='/api/updates/check'){const c=await updater.check(patch);return json(response,200,{version:c.manifest.version,files:c.files.length,verified:true});}
+      if(url.pathname==='/api/updates/install'){
+        const job=await updater.stage(patch);const child=updater.launch(job.jobPath);
+        child.once('error',()=>{updater.busy=false;});
+        child.once('spawn',()=>{json(response,202,{status:'installing',version:job.version});setTimeout(()=>{server.closeAllConnections();server.close(()=>process.exit(0));},300);});return;
+      }
+    }catch(e){return json(response,400,{error:e.message});}
+    return json(response,404,{error:'Route inconnue'});
+  }
+
+  if(pairedSit&&url.pathname.startsWith('/api/')&&url.pathname!=='/api/health'){
+    if(request.headers.host!==`127.0.0.1:${port}`)return json(response,403,{error:'Host rejected'});
+    try{return await forwardSit(request,response,pairedSit,pairedDirectory);}catch{return json(response,502,{error:'Configuration du raccordement SIT invalide'});}
+  }
 
   if (request.method === 'GET' && url.pathname === '/api/overview') {
     const sitState = sit ? await sit.state() : null;

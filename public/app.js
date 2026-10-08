@@ -271,7 +271,29 @@ for (const type of ['credential.rotation.started', 'credential.rotation.succeede
 }
 
 loadOverview().catch((error) => {
-  document.querySelector('#app-version').textContent=data.application?.version ? `· v${data.application.version}` : '';
   elements.mode.textContent = 'Indisponible';
   elements.result.textContent = `Impossible de charger l’application : ${error.message}`;
 });
+
+let updateSession;
+let checkedPatch;
+async function updateStatus(){
+ updateSession=await api('/api/updates/status');
+ document.querySelector('#patch-status').textContent=updateSession.enabled?`CRO ${updateSession.version}. ${updateSession.last?'Dernière installation : '+updateSession.last.status:''}`:'Cette installation ne possède pas encore de lanceur de mise à jour.';
+ document.querySelector('#patch-check').disabled=!updateSession.enabled;
+}
+document.querySelector('#patch-file').addEventListener('change',()=>{checkedPatch=null;document.querySelector('#patch-install').disabled=true;});
+document.querySelector('#patch-check').addEventListener('click',async()=>{
+ const out=document.querySelector('#patch-status');checkedPatch=null;document.querySelector('#patch-install').disabled=true;
+ try{const f=document.querySelector('#patch-file').files[0];if(!f||f.size>1024*1024)throw new Error('Choisir un paquet de moins de 1 Mo');
+ const candidate=JSON.parse(await f.text());const result=await api('/api/updates/check',{method:'POST',headers:{'content-type':'application/json','x-cro-update-token':updateSession.token},body:JSON.stringify(candidate)});
+ checkedPatch=candidate;out.textContent=`Signature et fichiers vérifiés : version ${result.version}.`;document.querySelector('#patch-install').disabled=false;
+ }catch(e){out.textContent=e.message;}
+});
+document.querySelector('#patch-install').addEventListener('click',async()=>{
+ const out=document.querySelector('#patch-status');document.querySelector('#patch-install').disabled=true;
+ try{if(!checkedPatch)throw new Error('Vérifier le paquet avant installation');await api('/api/updates/install',{method:'POST',headers:{'content-type':'application/json','x-cro-update-token':updateSession.token},body:JSON.stringify(checkedPatch)});
+ out.textContent='Installation en cours…';setTimeout(()=>{const timer=setInterval(async()=>{try{const state=await api('/api/updates/status');if(state.last){clearInterval(timer);location.reload();}}catch{}},1500);setTimeout(()=>{clearInterval(timer);out.textContent='Si la page ne revient pas, relancer CRO et consulter le résultat de la mise à jour.';},60000);},2000);
+ }catch(e){out.textContent=e.message;}
+});
+updateStatus().catch(e=>{document.querySelector('#patch-status').textContent=e.message;});

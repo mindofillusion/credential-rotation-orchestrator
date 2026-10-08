@@ -25,6 +25,14 @@
   </nav>
 
   <main>
+    <section class="panel" data-page="overview">
+      <h2>Mises à jour CRO</h2>
+      <p>Importer un paquet .cropatch signé. La version actuelle est conservée pour le retour arrière automatique si le démarrage échoue.</p>
+      <input id="patch-file" type="file" accept=".cropatch,application/json">
+      <button id="patch-check" type="button">Vérifier le paquet</button>
+      <button id="patch-install" type="button" disabled>Installer et redémarrer CRO</button>
+      <output id="patch-status" aria-live="polite">Chargement…</output>
+    </section>
     <section class="notice" aria-labelledby="notice-title" data-page="overview">
       <div>
         <strong id="notice-title">Environnement de simulation</strong>
