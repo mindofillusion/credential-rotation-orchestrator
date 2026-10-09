@@ -13,6 +13,12 @@ Install the standalone archive with `npm install --global --ignore-scripts ./cre
 
 See [standalone installation, upgrades and current limits](docs/standalone.md). The default application is portable; real Vaultwarden rotations still require the explicitly configured experimental SIT adapter. A general-purpose vault setup wizard and scheduler are not yet implemented.
 
+## External vault prerequisite and release scope
+
+A user-managed, independently installed vault is required for real use. CRO does not install, administer, upgrade or back up a production Bitwarden/Vaultwarden server. Repository `sit/` deployment recipes are for synthetic, isolated tests only. A separately installed vault does not remove CRO's own secret-processing or product-security responsibilities.
+
+Development after 0.3.0 now denies rotations unless a trusted caller supplies an explicit account/site/trigger policy. Periodic changes are disabled without a documented opt-in. No production setup wizard or scheduler is enabled by this change. See [compliance scope and evidence](docs/compliance-scope.md).
+
 ## Current prototype
 
 The current milestone validates the parts that must fail safely and adds a local template workshop:

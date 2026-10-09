@@ -11,6 +11,7 @@ import {writeJsonAtomic} from '../../src/storage/secure-json-store.js';
 import {keycloakMailLink} from '../../src/interventions/keycloak-mail-link.js';
 const [root,pair='current']=process.argv.slice(2);
 if(!root||!isAbsolute(root)||!['current','previous'].includes(pair))throw new Error('Invalid scope');
+if(process.env.CRO_SIT_ROTATION_APPROVED!=='true')throw new Error('Explicit SIT rotation approval required');
 process.env.PLAYWRIGHT_BROWSERS_PATH=join(root,'browsers');
 const {chromium}=createRequire(join(root,'browser-runtime','package.json'))('playwright');
 const authGuard=new SiteAuthGuard(process.env.CRO_AUTH_GUARD_DIR);

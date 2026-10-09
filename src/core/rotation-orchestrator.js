@@ -1,10 +1,12 @@
+import {evaluateRotationPolicy} from './rotation-policy.js';
 import { recoveryBinding } from './reconcile-rotation.js';
 import { generatePassword } from './password-generator.js';
 
 export class RotationOrchestrator {
   #active = new Set();
 
-  constructor({ vault, runner, events, recoveryStore }) {
+  constructor({ vault, runner, events, recoveryStore, policy }) {
+    this.policy = policy ? structuredClone(policy) : null;
     this.vault = vault;
     this.runner = runner;
     this.events = events;
@@ -12,6 +14,8 @@ export class RotationOrchestrator {
   }
 
   async rotate(options) {
+    const decision=evaluateRotationPolicy(this.policy,{accountId:options.accountId,origin:options.template?.manifest?.allowedOrigins?.[0],trigger:options.trigger??'manual'});
+    if(!decision.allowed)return {status:'blocked',reason:decision.reason};
     if(this.recoveryStore.withLock){
       try{return await this.recoveryStore.withLock(options.accountId,()=>this.#rotate(options));}
       catch{return {status:'blocked',reason:'recovery_lock_failed'};}

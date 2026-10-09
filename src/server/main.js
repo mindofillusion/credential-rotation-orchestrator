@@ -303,13 +303,15 @@ const server = createServer(async (request, response) => {
         ? body.outcome
         : 'success';
       vault.failUpdates = outcome === 'vault-failure';
+      const demoTemplate=await simulationTemplate();
       const orchestrator = new RotationOrchestrator({
+        policy:{enabled:true,accounts:['demo-account'],origins:demoTemplate.manifest.allowedOrigins,triggers:['manual']},
         vault,
         runner: new SimulationRunner({ outcome: outcome === 'vault-failure' ? 'success' : outcome }),
         events,
         recoveryStore
       });
-      const result = await orchestrator.rotate({ accountId: 'demo-account', template: await simulationTemplate() });
+      const result = await orchestrator.rotate({ accountId: 'demo-account', template: demoTemplate });
       vault.failUpdates = false;
       return json(response, 200, { ...result, recoveryPending: recoveryStore.has('demo-account') });
     } catch (error) {

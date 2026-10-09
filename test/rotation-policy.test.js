@@ -1,0 +1,8 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {evaluateRotationPolicy} from '../src/core/rotation-policy.js';
+import {RotationOrchestrator} from '../src/core/rotation-orchestrator.js';
+const request={accountId:'a',origin:'https://example.invalid'};
+const policy={enabled:true,accounts:['a'],origins:['https://example.invalid'],triggers:['manual','compromised','weak','reused']};
+test('default deny happens before vault access or runner invocation',async()=>{let calls=0;const engine=new RotationOrchestrator({vault:{getCredential(){calls++;}},runner:{execute(){calls++;}},events:{emit(){}},recoveryStore:{}});assert.equal((await engine.rotate({accountId:'a',template:{manifest:{allowedOrigins:[request.origin]}}})).reason,'rotation_not_enabled');assert.equal(calls,0);});
+test('authorization is scoped to exact account, site and trigger',()=>{assert.equal(evaluateRotationPolicy(policy,request).allowed,true);for(const overrides of [{accountId:'b'},{origin:'https://else.invalid'},{trigger:'bulk-test'},{trigger:'periodic'}])assert.equal(evaluateRotationPolicy(policy,{...request,...overrides}).allowed,false);});
+test('periodic rotation requires explicit opt-in and documented justification',()=>{const p={...policy,triggers:['periodic']};assert.equal(evaluateRotationPolicy(p,{...request,trigger:'periodic'}).allowed,false);assert.equal(evaluateRotationPolicy({...p,periodicEnabled:true,periodicJustification:'x'},{...request,trigger:'periodic'}).allowed,false);assert.equal(evaluateRotationPolicy({...p,periodicEnabled:true,periodicJustification:'Specific documented privileged account policy'},{...request,trigger:'periodic'}).allowed,true);});

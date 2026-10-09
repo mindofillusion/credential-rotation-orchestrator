@@ -65,6 +65,7 @@ async function loginOnce(c, username, password) {
   return {page,accepted};
 }
 async function main() {
+  if(process.env.CRO_SIT_ROTATION_APPROVED!=='true')throw new Error('Explicit SIT rotation approval required');
   step='verify-template';
   const envelope=JSON.parse(fs.readFileSync(0,'utf8'));
   const template=verifyTemplateBundle(envelope.bundle,new Map(envelope.trustedKeys),new Date(),{allowForumSitLoopback:true,allowCmsSitLoopback:true});
@@ -140,7 +141,7 @@ async function main() {
   }};
   const events=new EventBus();
   const recoveryStore={async put(id,password){fs.writeFileSync(journalPath,JSON.stringify({accountId:id,nextPassword:password,stage:'prepared-before-browser'}),{mode:0o600,flag:'wx'});}};
-  const orchestrator=new RotationOrchestrator({vault,runner,events,recoveryStore});
+  const orchestrator=new RotationOrchestrator({vault,runner,events,recoveryStore,policy:{enabled:true,accounts:[secret.cipherId],origins:[origin],triggers:['manual']}});
   const result=await orchestrator.rotate({accountId:secret.cipherId,passwordLength:24,template});
   if(result.status!=='succeeded') {
     save(resultPath,{...result,step,events:events.history().map(e=>({type:e.type,time:e.time}))});

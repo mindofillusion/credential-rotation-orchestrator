@@ -18,6 +18,7 @@ function createContext(outcome = 'success') {
   const recoveryStore = new MemoryRecoveryStore();
   const orchestrator = new RotationOrchestrator({
     vault,
+    policy:{enabled:true,accounts:['a1'],origins:['https://example.com'],triggers:['manual']},
     events,
     recoveryStore,
     runner: new SimulationRunner({ outcome })
