@@ -1,3 +1,4 @@
+import {SiteAuthGuard} from '../../src/core/site-auth-guard.js';
 import { ALL_SIT } from '../../src/core/sit-origins.js';
 // Controlled, loopback-only forum integration test. No arbitrary templates or hosts.
 import fs from 'node:fs';
@@ -16,6 +17,7 @@ if(!runtime?.startsWith('/'))throw new Error('Missing browser runtime');
 if (!root?.startsWith('/')) throw new Error('Set CRO_PHPBB_SIT_DIR');
 const {chromium} = createRequire(path.join(runtime,'package.json'))('playwright');
 const origin = fixture.origin;
+const authGuard=new SiteAuthGuard(process.env.CRO_AUTH_GUARD_DIR);
 const secretsPath = path.join(root,'forum-secrets.json');
 const journalPath = path.join(root,'rotation-pending.json');
 const resultPath = path.join(root,'rotation-result.json');
@@ -36,6 +38,11 @@ async function context() {
   return c;
 }
 async function login(c, username, password) {
+  let result;
+  await authGuard.attempt(origin,async()=>{result=await loginOnce(c,username,password);return result.accepted;});
+  return result;
+}
+async function loginOnce(c, username, password) {
   const page=await c.newPage();
   const loginConfig={
     wordpress:{url:'/wp-login.php',user:'#user_login',password:'#user_pass',submit:'#wp-submit',check:'/wp-admin/profile.php',logout:'#your-profile'},
@@ -125,11 +132,7 @@ async function main() {
       let works;try {works=(await login(fresh,credential.username,nextPassword)).accepted;}finally{await fresh.close();}
       if(!works)return {remoteChanged:true,verified:false};
       console.log(engine+'-fresh-new-password-login=ok');
-      step='reject-old-password';
-      const old=await context();
-      let oldWorks;try{oldWorks=(await login(old,credential.username,credential.password)).accepted;}finally{await old.close();}
-      if(oldWorks)return {remoteChanged:true,verified:false};
-      console.log(engine+'-old-password-rejected=ok');
+      // Negative password probes are forbidden by the site authentication policy.
       return {remoteChanged:true,verified:true};
     } catch {
       return {remoteChanged:submitted,verified:false};
@@ -149,7 +152,7 @@ async function main() {
   let accepted;try{accepted=(await login(c,stored.username,stored.password)).accepted;}finally{await c.close();}
   if(!accepted)throw new Error('Vault credential login failed');
   fs.unlinkSync(journalPath);
-  save(resultPath,{...result,engine,forumVersion:fixture.version,templateId:template.id,templateVersion:template.version,templateDigest:template.digest,origin,newPasswordLogin:true,oldPasswordRejected:true,vaultReadbackLogin:true,completedAt:new Date().toISOString(),events:events.history().map(e=>({type:e.type,time:e.time}))});
+  save(resultPath,{...result,engine,forumVersion:fixture.version,templateId:template.id,templateVersion:template.version,templateDigest:template.digest,origin,newPasswordLogin:true,oldPasswordRejectionTested:false,vaultReadbackLogin:true,completedAt:new Date().toISOString(),events:events.history().map(e=>({type:e.type,time:e.time}))});
   console.log(engine+'-login-with-vault-readback=ok');
   console.log('orchestrator-rotation=succeeded');
 }

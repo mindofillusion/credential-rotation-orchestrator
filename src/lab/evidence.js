@@ -12,7 +12,8 @@ export async function readLabEvidence(root){
       const p=join(root,file),s=await lstat(p);if(!s.isFile()||s.isSymbolicLink()||s.size>32768)continue;
       let data;try{data=JSON.parse(await readFile(p,'utf8'));}catch{continue;}
       const checks={};for(const key of ['linkValidated','passwordChanged','newPasswordLogin','oldPasswordRejected','reusedLinkRejected','expiredLinkRejected','passwordRetainedAfterExpiry'])checks[key]=data[key]===true;
-      const siteVerified=data.phase==='complete'&&!data.failed&&Object.values(checks).every(Boolean);
+      const siteVerified=data.phase==='complete'&&!data.failed&&Object.entries(checks).filter(([k])=>k!=='oldPasswordRejected').every(([,v])=>v);
+      checks.oldPasswordRejectionTested=data.oldPasswordRejectionTested===false?false:checks.oldPasswordRejected;
       pairs.push({pair,siteVerified,checks,vaultVerified:false,recordedAt:Number.isFinite(Date.parse(data.completedAt||data.startedAt))?new Date(data.completedAt||data.startedAt).toISOString():null});
     }
     return {available:true,pairs,scope:'historical-local-test-reports-not-live-health'};

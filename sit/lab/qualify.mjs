@@ -1,3 +1,4 @@
+import {SiteAuthGuard} from '../../src/core/site-auth-guard.js';
 // Real Keycloak -> SMTP -> Mailpit test; no tokens or message bodies in reports.
 import {readFile,writeFile} from 'node:fs/promises';
 import {join,isAbsolute} from 'node:path';
@@ -7,11 +8,18 @@ const [root,pair='current']=process.argv.slice(2);
 if(!root||!isAbsolute(root)||!['current','previous'].includes(pair))throw new Error('Explicit private root and fixed pair required');
 const port=pair==='current'?18251:18261;const mailPort=port-1;
 const origin=`http://127.0.0.1:${port}`,mailOrigin=`http://127.0.0.1:${mailPort}`;
+const authGuard=new SiteAuthGuard(process.env.CRO_AUTH_GUARD_DIR);
 const secrets=JSON.parse(await readFile(join(root,'bootstrap-private.json'),'utf8'));
 const report={pair,startedAt:new Date().toISOString(),discovery:false,adminLogin:false,testUserLogin:false,emailCaptured:false,readerCompatible:false,rotationVerified:false,vaultUpdated:false};
 const realm='cro-sit-'+randomBytes(6).toString('hex');
 report.realm=realm;
-async function request(path,options={}){const response=await fetch(origin+path,{...options,redirect:'error',signal:AbortSignal.timeout(10000)});if(!response.ok)throw new Error(`HTTP ${response.status} on ${path.split('?')[0]}`);return response;}
+async function request(path,options={}){
+  if(options.body instanceof URLSearchParams&&options.body.get('grant_type')==='password'){
+    let response;await authGuard.attempt(origin,async()=>{response=await requestOnce(path,options);return Boolean((await response.clone().json()).access_token);});return response;
+  }
+  return requestOnce(path,options);
+}
+async function requestOnce(path,options={}){const response=await fetch(origin+path,{...options,redirect:'error',signal:AbortSignal.timeout(10000)});if(!response.ok)throw new Error(`HTTP ${response.status} on ${path.split('?')[0]}`);return response;}
 try{
   let ready=false;for(let n=0;n<45;n++){try{const r=await fetch(origin+'/realms/master/.well-known/openid-configuration',{signal:AbortSignal.timeout(1500)});if(r.ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,1000));}if(!ready)throw new Error('Keycloak startup deadline');report.discovery=true;
   const auth=await (await request('/realms/master/protocol/openid-connect/token',{method:'POST',body:new URLSearchParams({grant_type:'password',client_id:'admin-cli',username:'cro-bootstrap',password:secrets[pair]})})).json();report.adminLogin=true;

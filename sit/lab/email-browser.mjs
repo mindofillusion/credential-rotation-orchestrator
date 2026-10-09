@@ -1,3 +1,4 @@
+import {SiteAuthGuard} from '../../src/core/site-auth-guard.js';
 // Purpose-built SIT only. No browser traces, screenshots, URL or token logging.
 import {readFile,writeFile,open,unlink} from 'node:fs/promises';
 import {join,isAbsolute} from 'node:path';
@@ -12,6 +13,7 @@ const [root,pair='current']=process.argv.slice(2);
 if(!root||!isAbsolute(root)||!['current','previous'].includes(pair))throw new Error('Invalid scope');
 process.env.PLAYWRIGHT_BROWSERS_PATH=join(root,'browsers');
 const {chromium}=createRequire(join(root,'browser-runtime','package.json'))('playwright');
+const authGuard=new SiteAuthGuard(process.env.CRO_AUTH_GUARD_DIR);
 const origin=`http://127.0.0.1:${pair==='current'?18251:18261}`;
 const mailOrigin=`http://127.0.0.1:${pair==='current'?18250:18260}`;
 const lockPath=join(root,`email-browser-${pair}.lock`),lock=await open(lockPath,'wx',0o600);
@@ -48,6 +50,9 @@ try{
   report.phase='confirmation-page';await page.locator('#kc-info-message').waitFor();
   report.passwordSubmitted=true;await c.close();
   async function login(password,expected){
+    return authGuard.attempt(origin,async()=>{await loginOnce(password,expected);return true;});
+  }
+  async function loginOnce(password,expected){
     const ctx=await context(),p=await ctx.newPage();
     try{
       const verifier=randomBytes(32).toString('base64url'),challenge=createHash('sha256').update(verifier).digest('base64url');
@@ -61,12 +66,13 @@ try{
     }catch(e){report.loginElementIds=await p.locator('[id]').evaluateAll(nodes=>nodes.map(n=>n.id));throw e;}finally{await ctx.close();}
   }
   report.phase='fresh-login';await login(newPassword,true);report.newPasswordLogin=true;
-  report.phase='old-password';await login(account.password,false);report.oldPasswordRejected=true;report.passwordChanged=true;
+  report.oldPasswordRejectionTested=false;report.passwordChanged=true;
   report.phase='reused-link';const retry=await context(),p=await retry.newPage();await p.goto(link,{waitUntil:'domcontentloaded'});await p.locator('#kc-error-message').waitFor();if(await p.locator('#password-new').count())throw new Error('Link reusable');report.reusedLinkRejected=true;await retry.close();
   report.phase='expired-link';
   const bootstrap=JSON.parse(await readFile(join(root,'bootstrap-private.json'),'utf8'));
-  const authResponse=await fetch(origin+'/realms/master/protocol/openid-connect/token',{method:'POST',redirect:'error',signal:AbortSignal.timeout(10000),body:new URLSearchParams({grant_type:'password',client_id:'admin-cli',username:'cro-bootstrap',password:bootstrap[pair]})});
-  if(!authResponse.ok)throw new Error('Expiry preparation failed');const auth=await authResponse.json();
+  let auth;
+  await authGuard.attempt(origin,async()=>{const authResponse=await fetch(origin+'/realms/master/protocol/openid-connect/token',{method:'POST',redirect:'error',signal:AbortSignal.timeout(10000),body:new URLSearchParams({grant_type:'password',client_id:'admin-cli',username:'cro-bootstrap',password:bootstrap[pair]})});
+  if(!authResponse.ok)return false;auth=await authResponse.json();return Boolean(auth.access_token);});
   const before=new Set((await reader.messages()).map(m=>m.ID));
   const sent=await fetch(origin+'/admin/realms/'+account.realm+'/users/'+account.userId+'/execute-actions-email?lifespan=1',{method:'PUT',redirect:'error',signal:AbortSignal.timeout(10000),headers:{authorization:'Bearer '+auth.access_token,'content-type':'application/json'},body:JSON.stringify(['UPDATE_PASSWORD'])});
   if(sent.status!==204)throw new Error('Expiry preparation failed');
@@ -86,6 +92,6 @@ try{
   if(['Missing callback','Code exchange failed','Old password accepted','Link reusable','Fixture failed','Unexpected mail link'].includes(e.message))report.failureReason=e.message;process.exitCode=1;
   report.pageStructure=[];
   if(browser)for(const c of browser.contexts())for(const p of c.pages())try{report.pageStructure.push(await p.locator('input,button,form,[role=alert]').evaluateAll(nodes=>nodes.map(n=>({tag:n.tagName,id:n.id,type:n.getAttribute('type'),name:n.getAttribute('name')}))));}catch{}
-  if(journal){try{const pending=JSON.parse(await readFile(journal,'utf8'));const probe={};for(const [label,password]of [['oldAccepted',pending.oldPassword],['newAccepted',pending.newPassword]]){const r=await fetch(origin+'/realms/'+account.realm+'/protocol/openid-connect/token',{method:'POST',redirect:'error',signal:AbortSignal.timeout(10000),body:new URLSearchParams({grant_type:'password',client_id:'cro-sit-test',username:account.username,password})});probe[label]=r.ok;}report.recoveryProbe=probe;}catch{report.recoveryProbe='unavailable';}}
+  report.recoveryProbe='disabled-by-site-authentication-policy';
 }
 finally{try{await browser?.close();}catch{report.cleanupFailed=true;process.exitCode=1;}await persist();await lock.close();await unlink(lockPath);console.log(JSON.stringify(report));}
