@@ -12,7 +12,7 @@ Cette séparation ne doit pas servir de justification à une exemption réglemen
 
 | Sujet | Fait sourcé | Conséquence pour CRO / inconnue |
 |---|---|---|
-| CRA, périmètre | La fourniture commerciale de produits numériques relève du règlement ; le logiciel libre fourni hors activité commerciale bénéficie d'un traitement spécifique. | Le modèle de diffusion/monétisation reste à décider et documenter. Une licence libre ne constitue pas une preuve suffisante d'exclusion. |
+| CRA, périmètre | La fourniture commerciale de produits numériques relève du règlement ; le logiciel libre fourni hors activité commerciale bénéficie d'un traitement spécifique. | Le porteur confirme le 9 octobre 2026 une diffusion non commerciale. Dans ce modèle libre hors activité commerciale, l'exclusion CRA est l'hypothèse de cadrage ; vérifier les conditions effectives de distribution. Cette intention ne modifie pas la licence et n'interdit pas les usages commerciaux autorisés par celle-ci. |
 | CRA, catégorie | Le règlement d'exécution 2025/2392 décrit les gestionnaires de mots de passe comme des produits stockant des mots de passe, localement ou sur serveur, incluant notamment génération et intégration à des applications. | Une API vers un coffre ne suffit pas à conclure à cette catégorie ; le stockage de récupération et la fonction principale de CRO nécessitent néanmoins une analyse formelle. Ne pas déclarer CRO hors champ ni classé définitivement. |
 | RGPD | Le rôle de sous-traitant suppose un traitement effectif pour le compte d'un responsable ; le simple éditeur ne reçoit pas automatiquement ce rôle. | Documenter séparément application locale, éventuel registre central, support et télémétrie. Un futur hébergement de messages ou de journaux modifierait le périmètre. |
 | Cryptologie française | Utilisation libre ; fourniture soumise à formalités sauf exception selon les caractéristiques et opérations. | Qualification et exemptions à vérifier auprès de l'ANSSI ou d'un spécialiste. Dépendre de bibliothèques standard ou d'un coffre tiers ne constitue pas, à lui seul, une exemption. |
@@ -27,6 +27,8 @@ Sources primaires consultées le 9 octobre 2026 :
 - FTC, Start with Security : https://www.ftc.gov/business-guidance/resources/start-security-guide-business
 
 ## Contrôles techniques et preuves
+
+Les exigences MFA, sessions et chiffrement sont détaillées dans [Authentification et connexion aux coffres](authentication-vault-security.md). Ce document distingue les décisions de conception des protections réellement implémentées.
 
 | Exigence de projet | État / preuve | Limite |
 |---|---|---|
